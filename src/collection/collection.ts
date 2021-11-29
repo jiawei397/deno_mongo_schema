@@ -43,7 +43,7 @@ export class Collection<T> extends OriginalCollection<T> {
     this.#schema = schema;
   }
 
-  getPopulateMap(populates?: Record<string, PopulateSelect>) {
+  private getPopulateMap(populates?: Record<string, PopulateSelect>) {
     let populateMap: Map<string, RealPopulateSelect> | undefined;
     if (populates) {
       populateMap = new Map();
@@ -56,7 +56,7 @@ export class Collection<T> extends OriginalCollection<T> {
     return populateMap;
   }
 
-  getPopulateParams() {
+  protected getPopulateParams() {
     return this.#schema?.getPopulateParams();
   }
 
@@ -313,6 +313,10 @@ export class Collection<T> extends OriginalCollection<T> {
     }
   }
 
+  /**
+   * this will remove after some version
+   * @deprecated
+   */
   save = this.insert;
 
   private async preHooks(hook: MongoHookMethod, ...args: any[]) {
