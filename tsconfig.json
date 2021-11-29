@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    // 严格属性初始化
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false
+  }
+}

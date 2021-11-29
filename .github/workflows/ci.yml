@@ -1,0 +1,43 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ubuntu-latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      matrix:
+        mongo: ["4.4"]
+    steps:
+      - name: Setup Environment
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Install Deno
+        uses: denolib/setup-deno@master
+        with:
+          deno-version: 1.x.x
+
+      - name: Log versions
+        run: |
+          deno --version
+
+      # Lint
+      - name: Format TS
+        run: deno fmt --check
+      # Start MongoDB
+      - name: Start MongoDB (Linux)
+        uses: wbari/start-mongoDB@v0.2
+        with:
+          mongoDBVersion: ${{ matrix.mongo }}
+
+      # Tests
+      - name: Test TS
+        run: deno test -A --unstable

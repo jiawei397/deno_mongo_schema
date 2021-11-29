@@ -1,0 +1,40 @@
+export {
+  Bson,
+  Collection as OriginalCollection,
+  Database as OriginalDatabase,
+  MongoClient as OriginalMongoClient,
+} from "https://deno.land/x/mongo@v0.28.0/mod.ts";
+export { WireProtocol } from "https://deno.land/x/mongo@v0.28.0/src/protocol/mod.ts";
+export { Cluster } from "https://deno.land/x/mongo@v0.28.0/src/cluster.ts";
+export type {
+  BuildInfo,
+  ConnectOptions,
+  DeleteOptions,
+  Document,
+  Filter,
+  FindOptions,
+  InsertDocument,
+  InsertOptions,
+  ListDatabaseInfo,
+  UpdateFilter,
+  UpdateOptions,
+} from "https://deno.land/x/mongo@v0.28.0/mod.ts";
+export { MongoDriverError } from "https://deno.land/x/mongo@v0.28.0/src/error.ts";
+export { parse } from "https://deno.land/x/mongo@v0.28.0/src/utils/uri.ts";
+export {
+  bgBlue,
+  bgRgb24,
+  bgRgb8,
+  blue,
+  bold,
+  green,
+  italic,
+  red,
+  rgb24,
+  rgb8,
+  yellow,
+} from "https://deno.land/std@0.97.0/fmt/colors.ts";
+export {
+  assert,
+  assertEquals,
+} from "https://deno.land/std@0.107.0/testing/asserts.ts";
