@@ -16,8 +16,8 @@ import {
   Prop,
   Schema,
   UpdateExOptions,
-} from "https://deno.land/x/deno_mongo_schema@v0.0.0/mod.ts";
-import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.0.0/mod.ts";
+} from "https://deno.land/x/deno_mongo_schema@v0.0.1/mod.ts";
+import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.0.1/mod.ts";
 
 const db = await getDB("mongodb://localhost:27017/test");
 
