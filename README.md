@@ -17,8 +17,8 @@ import {
   Prop,
   Schema,
   UpdateExOptions,
-} from "https://deno.land/x/deno_mongo_schema@v0.1.0/mod.ts";
-import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.1.0/mod.ts";
+} from "https://deno.land/x/deno_mongo_schema@v0.1.1/mod.ts";
+import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.1.1/mod.ts";
 
 // const db = await getDB("mongodb://localhost:27017/test");
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
@@ -106,7 +106,7 @@ import {
   MongoFactory,
   Prop,
   Schema,
-} from "https://deno.land/x/deno_mongo_schema@v0.1.0/mod.ts";
+} from "https://deno.land/x/deno_mongo_schema@v0.1.1/mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
