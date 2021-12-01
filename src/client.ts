@@ -1,46 +1,54 @@
 // deno-lint-ignore-file
-import { Database } from "./database.ts";
+// import { Database } from "./database.ts";
 import {
   assert,
   BuildInfo,
   Cluster,
   ConnectOptions,
+  Database,
   Document,
   ListDatabaseInfo,
   MongoDriverError,
   parse,
+  yellow,
 } from "../deps.ts";
+import { Model } from "./model.ts";
+import { SchemaCls } from "./schema.ts";
 
 export class MongoClient {
   // cache db
-  #dbCache = new Map();
-
-  #connectionCache = new Map();
-
   #cluster?: Cluster;
   #defaultDbName = "admin";
   #buildInfo?: BuildInfo;
+
+  #initedDBPromise?: Promise<Database>;
 
   get buildInfo() {
     return this.#buildInfo;
   }
 
-  public connectedCount = 0;
-
-  async connectDB(
-    options: ConnectOptions,
+  async connect(
+    options: ConnectOptions | string,
   ): Promise<Database> {
-    this.#defaultDbName = options.db;
-    const cluster = new Cluster(options);
-    await cluster.connect();
-    await cluster.authenticate();
-    await cluster.updateMaster();
+    try {
+      const parsedOptions = typeof options === "string"
+        ? await parse(options)
+        : options;
 
-    this.#cluster = cluster;
-    this.#buildInfo = await this.runCommand(this.#defaultDbName, {
-      buildInfo: 1,
-    });
-    return this.database(options.db);
+      this.#defaultDbName = parsedOptions.db;
+      const cluster = new Cluster(parsedOptions);
+      await cluster.connect();
+      await cluster.authenticate();
+      await cluster.updateMaster();
+
+      this.#cluster = cluster;
+      this.#buildInfo = await this.runCommand(this.#defaultDbName, {
+        buildInfo: 1,
+      });
+    } catch (e) {
+      throw new MongoDriverError(`Connection failed: ${e.message || e}`);
+    }
+    return this.database((options as ConnectOptions).db);
   }
 
   async listDatabases(options: {
@@ -63,42 +71,51 @@ export class MongoClient {
     return await this.#cluster.protocol.commandSingle(db, body);
   }
 
-  async connect(
-    options: ConnectOptions | string,
-  ): Promise<Database> {
-    try {
-      const parsedOptions = typeof options === "string"
-        ? await parse(options)
-        : options;
-      const cacheKey = JSON.stringify(parsedOptions.servers);
-      if (this.#connectionCache.has(cacheKey)) {
-        return this.#connectionCache.get(cacheKey);
-      }
-      const promise = this.connectDB(parsedOptions);
-      this.connectedCount++;
-      this.#connectionCache.set(cacheKey, promise);
-      return promise;
-    } catch (e) {
-      throw new MongoDriverError(`Connection failed: ${e.message || e}`);
-    }
-  }
-
   database(name = this.#defaultDbName): Database {
     assert(this.#cluster);
-    if (this.#dbCache.has(name)) {
-      return this.#dbCache.get(name);
-    }
-    const db = new Database(this.#cluster, name);
-    this.#dbCache.set(name, db);
-    return db;
+    return new Database(this.#cluster, name);
   }
 
   close() {
     if (this.#cluster) {
       this.#cluster.close();
     }
-    this.#dbCache.clear();
-    this.#connectionCache.clear();
-    this.connectedCount = 0;
+  }
+
+  // below is my extend functions
+  initDB(db: string): Promise<Database> {
+    if (!this.#initedDBPromise) {
+      const arr = db.split("/");
+      if (db.endsWith("/")) {
+        arr.pop();
+      }
+      const dbName = arr.pop();
+      const url = arr.join("/");
+      this.#initedDBPromise = this.connect(url).then(() => {
+        console.info(`connected mongo：${yellow(url)}`);
+        return this.database(dbName!);
+      });
+    }
+    return this.#initedDBPromise;
+  }
+
+  async getCollection<T = Document>(name: string, schema: SchemaCls) {
+    assert(this.#initedDBPromise);
+    const db = await this.#initedDBPromise;
+    return this.getCollectionByDb<T>(db, name, schema);
+  }
+
+  async getCollectionByDb<T = Document>(
+    db: Database,
+    name: string,
+    schema: SchemaCls,
+  ) {
+    assert(this.#cluster);
+    return new Model<T>(
+      this.#cluster.protocol,
+      db.name,
+      name,
+      schema,
+    );
   }
 }

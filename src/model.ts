@@ -12,13 +12,8 @@ import {
   UpdateFilter,
   WireProtocol,
   yellow,
-} from "../../deps.ts";
-import {
-  getModelByName,
-  initModel,
-  SchemaCls,
-  transferPopulateSelect,
-} from "../schema.ts";
+} from "../deps.ts";
+import { getModelByName, SchemaCls, transferPopulateSelect } from "./schema.ts";
 import {
   FindExOptions,
   MongoHookMethod,
@@ -27,10 +22,10 @@ import {
   SchemaType,
   UpdateExOptions,
   VirtualTypeOptions,
-} from "../types.ts";
-import { transStringToMongoId } from "../utils/tools.ts";
+} from "./types.ts";
+import { getMetadata, transStringToMongoId } from "./utils/tools.ts";
 
-export class Collection<T> extends OriginalCollection<T> {
+export class Model<T> extends OriginalCollection<T> {
   #schema: SchemaCls | undefined;
 
   constructor(
@@ -313,12 +308,6 @@ export class Collection<T> extends OriginalCollection<T> {
     }
   }
 
-  /**
-   * this will remove after some version
-   * @deprecated
-   */
-  save = this.insert;
-
   private async preHooks(hook: MongoHookMethod, ...args: any[]) {
     if (!this.#schema) {
       return;
@@ -578,7 +567,35 @@ export class Collection<T> extends OriginalCollection<T> {
     await this.dropIndexes({
       index: "*",
     });
-    await initModel(this, this.#schema);
+    await this.initModel(this.#schema);
     return true;
+  }
+
+  async initModel(cls: SchemaCls) {
+    const data = getMetadata(cls);
+    const indexes = [];
+    for (const key in data) {
+      const map: SchemaType = data[key];
+      if (Object.keys(map).length === 0) {
+        continue;
+      }
+      if (!map.index && !map.unique && !map.expires && !map.sparse) {
+        continue;
+      }
+      indexes.push({
+        name: key + "_1",
+        key: { [key]: 1 },
+        unique: map.unique,
+        sparse: map.sparse,
+        expireAfterSeconds: map.expires,
+      });
+    }
+
+    if (indexes.length === 0) {
+      return;
+    }
+    await this.createIndexes({
+      indexes,
+    });
   }
 }

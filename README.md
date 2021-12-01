@@ -12,6 +12,7 @@ and extend some API.
 import {
   getDB,
   getModel,
+  MongoFactory,
   MongoHookMethod,
   Prop,
   Schema,
@@ -19,7 +20,8 @@ import {
 } from "https://deno.land/x/deno_mongo_schema@v0.0.1/mod.ts";
 import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.0.1/mod.ts";
 
-const db = await getDB("mongodb://localhost:27017/test");
+// const db = await getDB("mongodb://localhost:27017/test");
+await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
 class User extends Schema {
   @Prop()
@@ -53,7 +55,8 @@ User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
   doc.name = "haha";
 });
 
-const model = await getModel<User>(db, User);
+// const model = await getModel<User>(db, User);
+const model = await MongoFactory.getModel<User>(User);
 
 const id = await model.insertOne({
   "name": "zhangsan",
@@ -99,9 +102,13 @@ console.log(delMulti);
 Or you can use virtual like this:
 
 ```ts
-import { getDB, getModel, Prop, Schema } from "../mod.ts";
+import {
+  MongoFactory,
+  Prop,
+  Schema,
+} from "https://deno.land/x/deno_mongo_schema@v0.0.1/mod.ts";
 
-const db = await getDB("mongodb://localhost:27017/test");
+await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
 class User extends Schema {
   @Prop()
@@ -136,8 +143,8 @@ Role.virtual("user", {
 // Role.populate("user", "-group -createTime");
 // Role.populate("user", "title group");
 
-// const userModel = await getModel<User>(db, User);
-const roleModel = await getModel<Role>(db, Role);
+// const userModel = await MongoFactory.getModel<User>(db, User);
+const roleModel = await MongoFactory.getModel<Role>(db, Role);
 
 // roleModel.insertOne({
 //   userId: id,
@@ -165,3 +172,7 @@ console.log(
   }),
 );
 ```
+
+## TODO
+
+- [ ] Modify schema as a decorator

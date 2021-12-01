@@ -1,5 +1,8 @@
 // deno-lint-ignore-file no-explicit-any
 import { Bson } from "../../deps.ts";
+import { Target } from "../types.ts";
+const metadataCache = new Map();
+const instanceCache = new Map();
 
 export function pick(obj: any, keys: string[]) {
   const result: any = {};
@@ -18,4 +21,38 @@ export function transStringToMongoId(id: string | Bson.ObjectId) {
     return new Bson.ObjectId(id);
   }
   return id;
+}
+
+export function getInstance(cls: Target) {
+  if (instanceCache.has(cls)) {
+    return instanceCache.get(cls);
+  }
+  const instance = new cls();
+  instanceCache.set(cls, instance);
+  return instance;
+}
+
+export function addMetadata(
+  target: Target,
+  propertyKey: string,
+  props: any = {},
+) {
+  const instance = getInstance(target);
+  let map = metadataCache.get(instance);
+  if (!map) {
+    map = {};
+    metadataCache.set(instance, map);
+  }
+  map[propertyKey] = props;
+}
+
+export function getMetadata(
+  target: Target,
+  propertyKey?: string,
+) {
+  const map = metadataCache.get(getInstance(target));
+  if (propertyKey) {
+    return map[propertyKey];
+  }
+  return map;
 }

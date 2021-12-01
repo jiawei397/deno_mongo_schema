@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { getModel, Prop, Schema } from "../schema.ts";
+import { Prop, Schema } from "./schema.ts";
 import {
   assert,
   assertEquals,
@@ -8,17 +8,14 @@ import {
   beforeEach,
   describe,
   it,
-} from "../../test.deps.ts";
-import { dbUrl, User } from "../../tests/common.ts";
-import { getDB } from "../utils/helper.ts";
-import { MongoHookMethod } from "../types.ts";
-import { Bson, Document } from "../../deps.ts";
-import { UpdateExOptions } from "../types.ts";
-import { Collection } from "./collection.ts";
+} from "../test.deps.ts";
+import { dbUrl, User } from "../tests/common.ts";
+import { MongoHookMethod, UpdateExOptions } from "./types.ts";
+import { Bson, Document } from "../deps.ts";
+import { MongoFactory } from "./factory.ts";
 
-const db = await getDB(dbUrl);
-const userModel: Collection<User> = await getModel<User>(
-  db,
+await MongoFactory.forRoot(dbUrl);
+const userModel = await MongoFactory.getModel<User>(
   User,
   "mongo_test_schema_users",
 );
@@ -41,8 +38,7 @@ Role.virtual("user", {
   isTransformLocalFieldToObjectID: true,
 });
 
-const roleModel = await getModel<Role>(
-  db,
+const roleModel = await MongoFactory.getModel<Role>(
   Role,
   "mongo_test_schema_roles",
 );
@@ -63,13 +59,15 @@ describe("collection", () => {
   let id = "";
   let id2 = "";
   it("insert", async () => {
-    id = await userModel.insertOne(user1Data).then((res) => {
+    id = await userModel.insertOne(user1Data).then((res: any) => {
       assert(res instanceof Bson.ObjectId, "maybe mongoId");
       return res.toString();
     });
     assertEquals(typeof id, "string");
 
-    id2 = await userModel.insertOne(user2Data).then((res) => res.toString());
+    id2 = await userModel.insertOne(user2Data).then((res: any) =>
+      res.toString()
+    );
     assertEquals(typeof id2, "string");
   });
 
@@ -171,7 +169,7 @@ describe("collection", () => {
     }, {
       remainOriginId: true,
     });
-    arr.forEach((doc) => {
+    arr.forEach((doc: any) => {
       assertExists(doc._id, "this time _id will be remained");
     });
   });

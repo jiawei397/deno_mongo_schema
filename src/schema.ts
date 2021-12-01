@@ -1,7 +1,4 @@
 // deno-lint-ignore-file no-explicit-any
-import { green } from "../deps.ts";
-import { Collection } from "./collection/mod.ts";
-import { Database } from "./database.ts";
 import {
   Constructor,
   Hooks,
@@ -10,16 +7,10 @@ import {
   PopulateSelect,
   RealPopulateSelect,
   SchemaType,
-  Target,
   TargetInstance,
   VirtualTypeOptions,
 } from "./types.ts";
-
-export const metadataCache = new Map();
-let modelCaches: Map<SchemaCls, any> | undefined;
-const modelNameCaches = new Map<Constructor, string>();
-
-export const instanceCache = new Map();
+import { addMetadata, getMetadata } from "./utils/tools.ts";
 
 export function transferPopulateSelect(
   select?: PopulateSelect,
@@ -136,40 +127,6 @@ export class Schema {
 
 export type SchemaCls = typeof Schema;
 
-export function getInstance(cls: Target) {
-  if (instanceCache.has(cls)) {
-    return instanceCache.get(cls);
-  }
-  const instance = new cls();
-  instanceCache.set(cls, instance);
-  return instance;
-}
-
-export function addMetadata(
-  target: Target,
-  propertyKey: string,
-  props: any = {},
-) {
-  const instance = getInstance(target);
-  let map = metadataCache.get(instance);
-  if (!map) {
-    map = {};
-    metadataCache.set(instance, map);
-  }
-  map[propertyKey] = props;
-}
-
-export function getMetadata(
-  target: Target,
-  propertyKey?: string,
-) {
-  const map = metadataCache.get(getInstance(target));
-  if (propertyKey) {
-    return map[propertyKey];
-  }
-  return map;
-}
-
 export function Prop(props?: SchemaType) {
   return function (target: TargetInstance, propertyKey: string) {
     addMetadata(target.constructor, propertyKey, props);
@@ -177,63 +134,18 @@ export function Prop(props?: SchemaType) {
   };
 }
 
-export function getModelByName(cls: Constructor, name?: string) {
+const modelNameCaches = new Map<Constructor, string>();
+
+// one model can only have one schema
+export function getModelByName(cls: Constructor, name = cls.name) {
   if (modelNameCaches.has(cls)) {
     return modelNameCaches.get(cls);
   }
-  let modelName = name || cls.name;
+  let modelName = name;
   if (!modelName.endsWith("s")) {
     modelName += "s";
   }
   const last = modelName.toLowerCase();
   modelNameCaches.set(cls, last);
   return last;
-}
-
-export async function getModel<T extends Schema>(
-  db: Database,
-  cls: SchemaCls,
-  name?: string,
-): Promise<Collection<T>> {
-  if (!modelCaches) {
-    modelCaches = new Map<SchemaCls, Collection<T>>();
-  } else {
-    if (modelCaches.has(cls)) {
-      return modelCaches.get(cls);
-    }
-  }
-  const modelName = getModelByName(cls, name)!;
-  const model = db.getCollection(modelName, cls);
-  modelCaches.set(cls, model);
-  await initModel(model, cls);
-  console.log(green(`Schema [${modelName}] init ok`));
-  return model as Collection<T>;
-}
-
-export async function initModel(model: Collection<unknown>, cls: SchemaCls) {
-  const data = getMetadata(cls);
-  const indexes = [];
-  for (const key in data) {
-    const map: SchemaType = data[key];
-    if (Object.keys(map).length === 0) {
-      continue;
-    }
-    if (!map.index && !map.unique && !map.expires && !map.sparse) {
-      continue;
-    }
-    indexes.push({
-      name: key + "_1",
-      key: { [key]: 1 },
-      unique: map.unique,
-      sparse: map.sparse,
-      expireAfterSeconds: map.expires,
-    });
-  }
-
-  if (indexes.length === 0) {
-    return;
-  }
-  await model.createIndexes({
-    indexes,
-  });
 }

@@ -1,6 +1,5 @@
 import {
-  getDB,
-  getModel,
+  MongoFactory,
   MongoHookMethod,
   Prop,
   Schema,
@@ -8,7 +7,7 @@ import {
 } from "../mod.ts";
 import type { Document } from "../mod.ts";
 
-const db = await getDB("mongodb://localhost:27017/test");
+await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
 class User extends Schema {
   @Prop()
@@ -42,7 +41,7 @@ User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
   doc.name = "haha";
 });
 
-const model = await getModel<User>(db, User);
+const model = await MongoFactory.getModel<User>(User);
 
 const id = await model.insertOne({
   "name": "zhangsan",

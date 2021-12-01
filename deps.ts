@@ -1,7 +1,7 @@
 export {
   Bson,
   Collection as OriginalCollection,
-  Database as OriginalDatabase,
+  Database,
   MongoClient as OriginalMongoClient,
 } from "https://deno.land/x/mongo@v0.28.0/mod.ts";
 export { WireProtocol } from "https://deno.land/x/mongo@v0.28.0/src/protocol/mod.ts";
@@ -38,3 +38,5 @@ export {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.107.0/testing/asserts.ts";
+
+export { Reflect } from "https://deno.land/x/reflect_metadata@v0.1.12-2/mod.ts";
