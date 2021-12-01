@@ -4,6 +4,7 @@ import { MongoClient } from "./client.ts";
 import { Model } from "./model.ts";
 import { getModelByName, Schema, SchemaCls } from "./schema.ts";
 import { Constructor } from "./types.ts";
+import { ErrorCode } from "./error.ts";
 
 export class MongoFactory {
   static #client: MongoClient | undefined;
@@ -43,12 +44,14 @@ export class MongoFactory {
       cls,
     );
     this.#modelCaches.set(cls, model);
-    await model.initModel(cls).catch((err: MongoServerError) => {
-      if (err.code === 85) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
-        return model!.syncIndexes();
-      }
-      return Promise.reject(err);
-    });
+    await model.initModel(cls)
+      .catch((err: MongoServerError) => {
+        if (err.code === ErrorCode.IndexOptionsConflict) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
+          return model!.syncIndexes();
+        }
+        return Promise.reject(err);
+      })
+      .catch(console.error); // this will not stop the app`s startup.
     console.log(green(`Schema [${modelName}] init ok`));
     return model;
   }
