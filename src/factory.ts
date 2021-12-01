@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { assert, green, Reflect } from "../deps.ts";
+import { assert, green, MongoServerError, Reflect } from "../deps.ts";
 import { MongoClient } from "./client.ts";
 import { Model } from "./model.ts";
 import { getModelByName, Schema, SchemaCls } from "./schema.ts";
@@ -43,7 +43,12 @@ export class MongoFactory {
       cls,
     );
     this.#modelCaches.set(cls, model);
-    await model.initModel(cls);
+    await model.initModel(cls).catch((err: MongoServerError) => {
+      if (err.code === 85) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
+        return model!.syncIndexes();
+      }
+      return Promise.reject(err);
+    });
     console.log(green(`Schema [${modelName}] init ok`));
     return model;
   }

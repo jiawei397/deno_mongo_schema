@@ -19,7 +19,11 @@ export type {
   UpdateFilter,
   UpdateOptions,
 } from "https://deno.land/x/mongo@v0.28.0/mod.ts";
-export { MongoDriverError } from "https://deno.land/x/mongo@v0.28.0/src/error.ts";
+export {
+  MongoDriverError,
+  MongoError,
+  MongoServerError,
+} from "https://deno.land/x/mongo@v0.28.0/src/error.ts";
 export { parse } from "https://deno.land/x/mongo@v0.28.0/src/utils/uri.ts";
 export {
   bgBlue,
