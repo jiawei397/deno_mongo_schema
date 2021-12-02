@@ -35,7 +35,9 @@ export interface SchemaType {
   sparse?: boolean; // 间隙索引
   index?: boolean;
 
+  /** @deprecated please use require instead */
   required?: boolean | [boolean, string];
+  require?: boolean | [boolean, string];
 
   default?: any;
 
