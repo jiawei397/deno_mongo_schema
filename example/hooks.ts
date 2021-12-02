@@ -86,3 +86,24 @@ const delMulti = await model.deleteMany({
   name: "zhangsan",
 });
 console.log(delMulti);
+
+const res = await model.findByIdAndUpdate(id, {
+  name: "lisi",
+});
+console.log(res);
+
+const res2 = await model.findByIdAndUpdate(id, {
+  name: "lisi",
+}, {
+  new: true,
+});
+console.log(res2);
+
+const res3 = await model.findOneAndUpdate({
+  name: "lisi",
+}, {
+  name: "wangwu",
+}, {
+  new: true,
+});
+console.log(res3);

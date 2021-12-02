@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import {
+  Bson,
   Document,
   Filter,
   FindOptions,
@@ -22,7 +23,7 @@ export type FindExOptions = FindOptions & {
 export type InsertExOptions = InsertOptions & ExOptions;
 
 export interface UpdateExOptions extends UpdateOptions {
-  new?: boolean;
+  new?: true;
   /** @deprecated Please drop it soon */
   useFindAndModify?: boolean;
 }
@@ -133,3 +134,10 @@ export interface VirtualType {
   /** Adds a custom setter to this virtual. */
   set(fn: Function): this;
 }
+
+export type UpdateOneResult = {
+  upsertedId: Bson.ObjectId;
+  upsertedCount: number;
+  matchedCount: number;
+  modifiedCount: number;
+};

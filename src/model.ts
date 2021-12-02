@@ -20,6 +20,7 @@ import {
   RealPopulateSelect,
   SchemaType,
   UpdateExOptions,
+  UpdateOneResult,
   VirtualTypeOptions,
 } from "./types.ts";
 import { getMetadata, transStringToMongoId } from "./utils/tools.ts";
@@ -435,12 +436,24 @@ export class Model<T> extends OriginalCollection<T> {
   findByIdAndUpdate(
     id: string | Bson.ObjectId,
     update: UpdateFilter<T>,
+    options: UpdateExOptions,
+  ): Promise<T | null>;
+  findByIdAndUpdate(
+    id: string | Bson.ObjectId,
+    update: UpdateFilter<T>,
+  ): Promise<UpdateOneResult>;
+  findByIdAndUpdate(
+    id: string | Bson.ObjectId,
+    update: UpdateFilter<T>,
     options?: UpdateExOptions,
   ) {
     const filter = {
       _id: transStringToMongoId(id),
     };
-    return this.findOneAndUpdate(filter, update, options);
+    if (options) {
+      return this.findOneAndUpdate(filter, update, options);
+    }
+    return this.findOneAndUpdate(filter, update);
   }
 
   findById(
@@ -456,13 +469,23 @@ export class Model<T> extends OriginalCollection<T> {
   async findOneAndUpdate(
     filter: Filter<T>,
     update: UpdateFilter<T>,
+  ): Promise<UpdateOneResult>;
+  async findOneAndUpdate(
+    filter: Filter<T>,
+    update: UpdateFilter<T>,
+    options: UpdateExOptions,
+  ): Promise<T | null>;
+  async findOneAndUpdate(
+    filter: Filter<T>,
+    update: UpdateFilter<T>,
     options?: UpdateExOptions,
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
     const res = await this.updateOne(filter, update, options);
+
     if (options?.new) {
       if (res.matchedCount > 0) {
-        const updatedDoc = await this.findOne(filter);
+        const updatedDoc = await this.findById(res.upsertedId);
         await this.afterFindOneAndUpdate(updatedDoc);
         return updatedDoc;
       } else {
