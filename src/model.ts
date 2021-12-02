@@ -6,7 +6,6 @@ import {
   Document,
   Filter,
   InsertDocument,
-  InsertOptions,
   OriginalCollection,
   UpdateFilter,
   WireProtocol,
@@ -15,6 +14,7 @@ import {
 import { getModelByName, SchemaCls, transferPopulateSelect } from "./schema.ts";
 import {
   FindExOptions,
+  InsertExOptions,
   MongoHookMethod,
   PopulateSelect,
   RealPopulateSelect,
@@ -251,6 +251,7 @@ export class Model<T> extends OriginalCollection<T> {
         delete doc._id;
       }
     }
+    return doc;
   }
 
   private pickVirtual(
@@ -393,12 +394,22 @@ export class Model<T> extends OriginalCollection<T> {
 
   async insertMany(
     docs: InsertDocument<T>[],
-    options?: InsertOptions,
+    options?: InsertExOptions,
   ) {
     await this.preInsert(docs);
     const res = await super.insertMany(docs, options);
     await this.afterInsert(docs);
     return res;
+  }
+
+  /** @deprecated please use insertOne instead */
+  async save(doc: InsertDocument<T>, options?: InsertExOptions) {
+    const id = await super.insertOne(doc, options);
+    const res = {
+      ...doc,
+      _id: id,
+    };
+    return this.transferId(res, options?.remainOriginId);
   }
 
   private async preFindOneAndUpdate(

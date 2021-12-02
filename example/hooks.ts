@@ -48,6 +48,12 @@ const id = await model.insertOne({
   "age": 18,
 });
 
+const wangwuInfo = await model.save({
+  "name": "wangwu",
+  "age": 20,
+});
+console.log("wangwuInfo", wangwuInfo);
+
 User.post(MongoHookMethod.findOne, function (doc) {
   console.log("----post---findOne----", doc);
 });

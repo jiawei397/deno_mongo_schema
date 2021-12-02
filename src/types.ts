@@ -1,18 +1,30 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import { Document, Filter, FindOptions, UpdateOptions } from "../deps.ts";
+import {
+  Document,
+  Filter,
+  FindOptions,
+  InsertOptions,
+  UpdateOptions,
+} from "../deps.ts";
 
 export type PopulateSelect = string | Record<string, 0 | 1> | true;
 
 export type RealPopulateSelect = Exclude<PopulateSelect, string>;
 
-export interface FindExOptions extends FindOptions {
-  populates?: Record<string, PopulateSelect>;
-
+export type ExOptions = {
   remainOriginId?: boolean; // is keep _id
-}
+};
+
+export type FindExOptions = FindOptions & {
+  populates?: Record<string, PopulateSelect>;
+} & ExOptions;
+
+export type InsertExOptions = InsertOptions & ExOptions;
 
 export interface UpdateExOptions extends UpdateOptions {
   new?: boolean;
+  /** @deprecated Please drop it soon */
+  useFindAndModify?: boolean;
 }
 
 export type Constructor = new (...args: any[]) => any;
