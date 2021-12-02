@@ -1,4 +1,4 @@
-import { getDB, getModel, Prop, Schema } from "../mod.ts";
+import {getDB, getModel, Prop, Schema} from "../mod.ts";
 
 const db = await getDB("mongodb://localhost:27017/test");
 
@@ -34,42 +34,52 @@ Role.virtual("user", {
 // Role.populate("user", "group");
 // Role.populate("user", "-group -createTime");
 // Role.populate("user", "title group");
-
-// const userModel = await getModel<User>(db, User);
-
-// const id = await userModel.insertOne({
-//   group: "spacex",
-//   title: "zn",
-// });
-// console.log(id);
-
-// const arr = await userModel.find().toArray();
-// console.log(arr);
-
 const roleModel = await getModel<Role>(db, Role);
 
-// roleModel.insertOne({
-//   userId: id,
-//   name: "normal",
-// });
 
-console.log(
-  await roleModel.findMany({}, {
-    projection: {
-      name: 1,
-      userId: 1,
-    },
-    // skip: 1,
-    // limit: 1,
-    populates: {
-      // user: {
-      //   // _id: 0,
-      //   group: 1,
-      //   title: 1,
-      // },
-      // user: "group",
-      user: true,
-      // user: "-_id -title",
-    },
-  }),
-);
+async function init() {
+  const userModel = await getModel<User>(db, User);
+
+  const id = await userModel.insertOne({
+    group: "spacex",
+    title: "zn",
+  });
+  console.log(id);
+
+  const arr = await userModel.find().toArray();
+  console.log(arr);
+
+
+  await roleModel.insertOne({
+    userId: id.toString(),
+    name: "normal",
+  });
+}
+
+async function main() {
+  console.log(
+      await roleModel.findMany({}, {
+        projection: {
+          name: 1,
+          userId: 1,
+        },
+        // skip: 1,
+        // limit: 1,
+        populates: {
+          // user: {
+          //   // _id: 0,
+          //   group: 1,
+          //   title: 1,
+          // },
+          // user: "group",
+          user: true,
+          // user: "-_id -title",
+        },
+      }),
+  );
+
+}
+
+// await init()
+
+await main()

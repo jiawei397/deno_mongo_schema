@@ -13,7 +13,7 @@ import {
   WireProtocol,
   yellow,
 } from "../deps.ts";
-import { getModelByName, SchemaCls, transferPopulateSelect } from "./schema.ts";
+import {getModelByName, SchemaCls, transferPopulateSelect} from "./schema.ts";
 import {
   FindExOptions,
   MongoHookMethod,
@@ -23,16 +23,16 @@ import {
   UpdateExOptions,
   VirtualTypeOptions,
 } from "./types.ts";
-import { getMetadata, transStringToMongoId } from "./utils/tools.ts";
+import {getMetadata, transStringToMongoId} from "./utils/tools.ts";
 
 export class Model<T> extends OriginalCollection<T> {
   #schema: SchemaCls | undefined;
 
   constructor(
-    protocol: WireProtocol,
-    dbName: string,
-    readonly name: string,
-    schema?: SchemaCls,
+      protocol: WireProtocol,
+      dbName: string,
+      readonly name: string,
+      schema?: SchemaCls,
   ) {
     super(protocol, dbName, name);
     this.#schema = schema;
@@ -56,8 +56,8 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private _find(
-    filter?: Filter<T>,
-    options?: FindExOptions,
+      filter?: Filter<T>,
+      options?: FindExOptions,
   ) {
     const {
       remainOriginId: _,
@@ -75,8 +75,8 @@ export class Model<T> extends OriginalCollection<T> {
       });
     } else {
       const res = super.find(
-        filter,
-        others,
+          filter,
+          others,
       );
       if (options?.skip) {
         res.skip(options.skip);
@@ -97,7 +97,7 @@ export class Model<T> extends OriginalCollection<T> {
     filter?: Document;
     options?: FindOptions;
   }) {
-    const { populateMap, populateParams, filter, options } = virturalOptions;
+    const {populateMap, populateParams, filter, options} = virturalOptions;
     const paramsArray = [];
     if (filter) {
       paramsArray.push({
@@ -134,8 +134,8 @@ export class Model<T> extends OriginalCollection<T> {
         from = getModelByName(from);
       }
       if (
-        value.isTransformLocalFieldToObjectID ||
-        value.isTransformObjectIDToLocalField
+          value.isTransformLocalFieldToObjectID ||
+          value.isTransformObjectIDToLocalField
       ) {
         if (value.isTransformLocalFieldToObjectID) {
           addFields[value.localField] = {
@@ -164,18 +164,18 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private async preFind(
-    hookType: MongoHookMethod,
-    filter?: Document,
-    options?: FindOptions,
+      hookType: MongoHookMethod,
+      filter?: Document,
+      options?: FindOptions,
   ) {
     this.formatBsonId(filter);
     await this.preHooks(hookType, filter, options);
   }
 
   private async afterFind(
-    docs: unknown | unknown[],
-    filter?: Document,
-    options?: FindOptions,
+      docs: unknown | unknown[],
+      filter?: Document,
+      options?: FindOptions,
   ) {
     if (Array.isArray(docs)) {
       await this.postHooks(MongoHookMethod.findMany, docs, filter, options);
@@ -187,8 +187,8 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   async findOne(
-    filter?: Filter<T>,
-    options?: FindExOptions,
+      filter?: Filter<T>,
+      options?: FindExOptions,
   ) {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
@@ -197,8 +197,8 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   async findMany(
-    filter?: Filter<T>,
-    options?: FindExOptions,
+      filter?: Filter<T>,
+      options?: FindExOptions,
   ) {
     await this.preFind(MongoHookMethod.findMany, filter, options);
     const docs = await this._find(filter, options).toArray();
@@ -210,7 +210,7 @@ export class Model<T> extends OriginalCollection<T> {
     if (!doc) {
       return;
     }
-    const { remainOriginId, populates } = options || {};
+    const {remainOriginId, populates} = options || {};
     this.transferId(doc, remainOriginId);
     const params = this.getPopulateParams();
     if (!params) {
@@ -226,15 +226,22 @@ export class Model<T> extends OriginalCollection<T> {
       }
       const arr = doc[key] as any[];
       const pickMap = map.get(key);
-      for (let i = 0; i < arr.length; i++) {
-        const item = arr[i];
+      if (arr?.length === 0) {
         if (value.justOne) {
-          doc[key] = this.pickVirtual(item, pickMap!, remainOriginId);
-          break;
-        } else {
-          arr[i] = this.pickVirtual(item, pickMap!, remainOriginId);
+          doc[key] = null;
+        }
+      } else {
+        for (let i = 0; i < arr.length; i++) {
+          const item = arr[i];
+          if (value.justOne) {
+            doc[key] = this.pickVirtual(item, pickMap!, remainOriginId);
+            break;
+          } else {
+            arr[i] = this.pickVirtual(item, pickMap!, remainOriginId);
+          }
         }
       }
+
     }
   }
 
@@ -249,9 +256,9 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private pickVirtual(
-    virtualDoc: any,
-    pickMap: Exclude<PopulateSelect, string>,
-    remainOriginId?: boolean,
+      virtualDoc: any,
+      pickMap: Exclude<PopulateSelect, string>,
+      remainOriginId?: boolean,
   ) {
     let needPick = false; // if specified some key, then will pick this keys
     if (typeof pickMap === "object") {
@@ -344,7 +351,7 @@ export class Model<T> extends OriginalCollection<T> {
         for (const dk in doc) {
           if (!Object.prototype.hasOwnProperty.call(data, dk) && dk !== "_id") {
             console.warn(
-              yellow(`remove undefined key [${blue(dk)}] in Schema`),
+                yellow(`remove undefined key [${blue(dk)}] in Schema`),
             );
             delete doc[dk];
           }
@@ -386,8 +393,8 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   async insertMany(
-    docs: InsertDocument<T>[],
-    options?: InsertOptions,
+      docs: InsertDocument<T>[],
+      options?: InsertOptions,
   ) {
     await this.preInsert(docs);
     const res = await super.insertMany(docs, options);
@@ -396,29 +403,29 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private async preFindOneAndUpdate(
-    filter: Document,
-    update: Document,
-    options?: UpdateExOptions,
+      filter: Document,
+      update: Document,
+      options?: UpdateExOptions,
   ) {
     this.formatBsonId(filter);
     await this.preHooks(
-      MongoHookMethod.findOneAndUpdate,
-      filter,
-      update,
-      options,
+        MongoHookMethod.findOneAndUpdate,
+        filter,
+        update,
+        options,
     );
   }
 
   private async afterFindOneAndUpdate(
-    doc?: Document,
+      doc?: Document,
   ) {
     await this.postHooks(MongoHookMethod.findOneAndUpdate, doc);
   }
 
   findByIdAndUpdate(
-    id: string | Bson.ObjectId,
-    update: UpdateFilter<T>,
-    options?: UpdateExOptions,
+      id: string | Bson.ObjectId,
+      update: UpdateFilter<T>,
+      options?: UpdateExOptions,
   ) {
     const filter = {
       _id: transStringToMongoId(id),
@@ -427,8 +434,8 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   findById(
-    id: string | Bson.ObjectId,
-    options?: FindOptions,
+      id: string | Bson.ObjectId,
+      options?: FindOptions,
   ) {
     const filter = {
       _id: transStringToMongoId(id),
@@ -437,9 +444,9 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   async findOneAndUpdate(
-    filter: Filter<T>,
-    update: UpdateFilter<T>,
-    options?: UpdateExOptions,
+      filter: Filter<T>,
+      update: UpdateFilter<T>,
+      options?: UpdateExOptions,
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
     const res = await this.updateOne(filter, update, options);
@@ -456,9 +463,9 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private async preUpdate(
-    filter: Document,
-    doc: Document,
-    options?: UpdateExOptions,
+      filter: Document,
+      doc: Document,
+      options?: UpdateExOptions,
   ) {
     this.formatBsonId(filter);
 
@@ -474,7 +481,7 @@ export class Model<T> extends OriginalCollection<T> {
           } else {
             if (!Object.prototype.hasOwnProperty.call(data, dk)) {
               console.warn(
-                yellow(`remove undefined key [${blue(dk)}] in Schema`),
+                  yellow(`remove undefined key [${blue(dk)}] in Schema`),
               );
               delete doc[dk];
             }
@@ -496,17 +503,17 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private async afterUpdate(
-    filter: Document,
-    doc: Document,
-    options?: UpdateExOptions,
+      filter: Document,
+      doc: Document,
+      options?: UpdateExOptions,
   ) {
     await this.postHooks(MongoHookMethod.update, filter, doc, options);
   }
 
   async updateMany(
-    filter: Filter<T>,
-    doc: UpdateFilter<T>,
-    options?: UpdateExOptions,
+      filter: Filter<T>,
+      doc: UpdateFilter<T>,
+      options?: UpdateExOptions,
   ) {
     await this.preUpdate(filter, doc, options);
     const res = await super.updateMany(filter, doc, options);
@@ -515,24 +522,24 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private async preDelete(
-    filter: Document,
-    options?: DeleteOptions,
+      filter: Document,
+      options?: DeleteOptions,
   ) {
     this.formatBsonId(filter);
     await this.preHooks(MongoHookMethod.delete, filter, options);
   }
 
   private async afterDelete(
-    filter: Document,
-    options?: DeleteOptions,
-    res?: number,
+      filter: Document,
+      options?: DeleteOptions,
+      res?: number,
   ) {
     await this.postHooks(MongoHookMethod.delete, filter, options, res);
   }
 
   async deleteMany(
-    filter: Filter<T>,
-    options?: DeleteOptions,
+      filter: Filter<T>,
+      options?: DeleteOptions,
   ): Promise<number> {
     await this.preDelete(filter, options);
     const res = await super.deleteMany(filter, options);
@@ -543,10 +550,10 @@ export class Model<T> extends OriginalCollection<T> {
   delete = this.deleteMany;
 
   deleteOne(
-    filter: Filter<T>,
-    options?: DeleteOptions,
+      filter: Filter<T>,
+      options?: DeleteOptions,
   ) {
-    return this.delete(filter, { ...options, limit: 1 });
+    return this.delete(filter, {...options, limit: 1});
   }
 
   findOneAndDelete = this.deleteOne;
@@ -584,7 +591,7 @@ export class Model<T> extends OriginalCollection<T> {
       }
       indexes.push({
         name: key + "_1",
-        key: { [key]: 1 },
+        key: {[key]: 1},
         unique: map.unique,
         sparse: map.sparse,
         expireAfterSeconds: map.expires,
