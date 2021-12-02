@@ -129,10 +129,7 @@ export class Model<T> extends OriginalCollection<T> {
       if (!populateMap.has(key)) {
         continue;
       }
-      let from = value.ref;
-      if (typeof from === "function") {
-        from = getModelByName(from);
-      }
+      const from = getModelByName(value.ref);
       if (
         value.isTransformLocalFieldToObjectID ||
         value.isTransformObjectIDToLocalField

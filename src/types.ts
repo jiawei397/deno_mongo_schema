@@ -23,7 +23,7 @@ export type FindExOptions = FindOptions & {
 export type InsertExOptions = InsertOptions & ExOptions;
 
 export interface UpdateExOptions extends UpdateOptions {
-  new?: true;
+  new?: boolean;
   /** @deprecated Please drop it soon */
   useFindAndModify?: boolean;
 }
@@ -70,7 +70,7 @@ export type TargetInstance = any;
 
 export interface VirtualTypeOptions {
   /** If `ref` is not nullish, this becomes a populated virtual. */
-  ref?: string | Constructor;
+  ref: Constructor;
 
   /**  The local field to populate on if this is a populated virtual. */
   localField: string;
