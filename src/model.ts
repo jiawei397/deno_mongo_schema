@@ -5,7 +5,6 @@ import {
   DeleteOptions,
   Document,
   Filter,
-  FindOptions,
   InsertDocument,
   InsertOptions,
   OriginalCollection,
@@ -95,7 +94,7 @@ export class Model<T> extends OriginalCollection<T> {
     populateMap: Map<string, PopulateSelect>;
     populateParams: Map<string, VirtualTypeOptions>;
     filter?: Document;
-    options?: FindOptions;
+    options?: FindExOptions;
   }) {
     const {populateMap, populateParams, filter, options} = virturalOptions;
     const paramsArray = [];
@@ -166,7 +165,7 @@ export class Model<T> extends OriginalCollection<T> {
   private async preFind(
       hookType: MongoHookMethod,
       filter?: Document,
-      options?: FindOptions,
+      options?: FindExOptions,
   ) {
     this.formatBsonId(filter);
     await this.preHooks(hookType, filter, options);
@@ -175,7 +174,7 @@ export class Model<T> extends OriginalCollection<T> {
   private async afterFind(
       docs: unknown | unknown[],
       filter?: Document,
-      options?: FindOptions,
+      options?: FindExOptions,
   ) {
     if (Array.isArray(docs)) {
       await this.postHooks(MongoHookMethod.findMany, docs, filter, options);
@@ -435,7 +434,7 @@ export class Model<T> extends OriginalCollection<T> {
 
   findById(
       id: string | Bson.ObjectId,
-      options?: FindOptions,
+      options?: FindExOptions,
   ) {
     const filter = {
       _id: transStringToMongoId(id),
