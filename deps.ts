@@ -3,9 +3,9 @@ export {
   Collection as OriginalCollection,
   Database,
   MongoClient as OriginalMongoClient,
-} from "https://deno.land/x/mongo@v0.28.0/mod.ts";
-export { WireProtocol } from "https://deno.land/x/mongo@v0.28.0/src/protocol/mod.ts";
-export { Cluster } from "https://deno.land/x/mongo@v0.28.0/src/cluster.ts";
+} from "https://deno.land/x/mongo@v0.28.1/mod.ts";
+export { WireProtocol } from "https://deno.land/x/mongo@v0.28.1/src/protocol/mod.ts";
+export { Cluster } from "https://deno.land/x/mongo@v0.28.1/src/cluster.ts";
 export type {
   BuildInfo,
   ConnectOptions,
@@ -18,13 +18,13 @@ export type {
   ListDatabaseInfo,
   UpdateFilter,
   UpdateOptions,
-} from "https://deno.land/x/mongo@v0.28.0/mod.ts";
+} from "https://deno.land/x/mongo@v0.28.1/mod.ts";
 export {
   MongoDriverError,
   MongoError,
   MongoServerError,
-} from "https://deno.land/x/mongo@v0.28.0/src/error.ts";
-export { parse } from "https://deno.land/x/mongo@v0.28.0/src/utils/uri.ts";
+} from "https://deno.land/x/mongo@v0.28.1/src/error.ts";
+export { parse } from "https://deno.land/x/mongo@v0.28.1/src/utils/uri.ts";
 export {
   bgBlue,
   bgRgb24,
