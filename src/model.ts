@@ -1,5 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
 import {
+  assert,
   blue,
   Bson,
   DeleteOptions,
@@ -604,12 +605,13 @@ export class Model<T> extends OriginalCollection<T> {
     await this.dropIndexes({
       index: "*",
     });
-    await this.initModel(this.#schema);
+    await this.initModel();
     return true;
   }
 
-  async initModel(cls: SchemaCls) {
-    const data = getMetadata(cls);
+  async initModel() {
+    assert(this.#schema, "schema is not defined");
+    const data = getMetadata(this.#schema);
     const indexes = [];
     for (const key in data) {
       const map: SchemaType = data[key];

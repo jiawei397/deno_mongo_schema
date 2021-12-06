@@ -44,7 +44,7 @@ export class MongoFactory {
       cls,
     );
     this.#modelCaches.set(cls, model);
-    await model.initModel(cls)
+    await model.initModel()
       .catch((err: MongoServerError) => {
         if (err.code === ErrorCode.IndexOptionsConflict) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
           return model!.syncIndexes();
