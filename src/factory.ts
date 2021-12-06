@@ -76,7 +76,7 @@ export class MongoFactory {
 
 export const InjectModel = (Cls: Constructor) =>
   (target: Constructor, _property: any, index: number) => {
-    Reflect.defineMetadata(index + "", {
+    Reflect.defineMetadata("design:inject" + index, {
       params: [Cls],
       fn: MongoFactory.getModel.bind(MongoFactory),
     }, target);
