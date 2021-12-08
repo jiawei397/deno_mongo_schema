@@ -16,6 +16,7 @@ class User extends Schema {
   @Prop({
     required: true,
     index: true,
+    // index: "text",
   })
   name!: string;
 
@@ -89,22 +90,30 @@ const delMulti = await model.deleteMany({
 console.log(delMulti);
 
 const res = await model.findByIdAndUpdate(id, {
-  name: "lisi",
+  $set: {
+    name: "lisi",
+  },
 });
 console.log(res);
 
 const res2 = await model.findByIdAndUpdate(id, {
-  name: "lisi",
+  $set: {
+    name: "lisi2",
+  },
 }, {
   new: true,
 });
 console.log(res2);
 
 const res3 = await model.findOneAndUpdate({
-  name: "lisi",
+  name: "lisi2",
 }, {
-  name: "wangwu",
+  $set: {
+    name: "wangwu",
+  },
 }, {
   new: true,
 });
 console.log(res3);
+
+model.replaceOne;

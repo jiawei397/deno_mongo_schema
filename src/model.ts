@@ -621,16 +621,10 @@ export class Model<T> extends OriginalCollection<T> {
         continue;
       }
       const { index, required: _required, ...otherParams } = map;
-      if (index === "text") {
-        console.warn(
-          yellow(`InitModel not implement [${green("text index")}]`),
-        ); // TODO implement text index
-        continue;
-      }
       indexes.push({
         expireAfterSeconds: map.expires,
         name: key + "_1",
-        key: { [key]: 1 },
+        key: { [key]: index === "text" ? "text" : 1 },
         ...otherParams,
       });
     }

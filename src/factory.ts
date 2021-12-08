@@ -53,7 +53,13 @@ export class MongoFactory {
     this.#modelCaches.set(cls, model);
     await model.initModel()
       .catch((err: MongoServerError) => {
-        if (err.code === ErrorCode.IndexOptionsConflict) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
+        if (
+          err.code === ErrorCode.IndexOptionsConflict ||
+          err.code === ErrorCode.IndexKeySpecsConflict
+        ) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
+          console.debug(
+            `Init index caused conflict error: ${err.message}, and will try to drop it and create it again`,
+          );
           return model!.syncIndexes();
         }
         return Promise.reject(err);
