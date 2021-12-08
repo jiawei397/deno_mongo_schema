@@ -1,5 +1,12 @@
 // deno-lint-ignore-file no-explicit-any
-import { assert, green, MongoServerError, Reflect } from "../deps.ts";
+import {
+  assert,
+  blue,
+  green,
+  MongoServerError,
+  Reflect,
+  yellow,
+} from "../deps.ts";
 import { MongoClient } from "./client.ts";
 import { Model } from "./model.ts";
 import { getModelByName, Schema, SchemaCls } from "./schema.ts";
@@ -52,7 +59,7 @@ export class MongoFactory {
         return Promise.reject(err);
       })
       .catch(console.error); // this will not stop the app`s startup.
-    console.log(green(`Schema [${modelName}] init ok`));
+    console.log(`${yellow("Schema")} [${green(modelName)}] ${blue("init ok")}`);
     return model;
   }
 

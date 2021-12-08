@@ -6,6 +6,7 @@ import {
   DeleteOptions,
   Document,
   Filter,
+  green,
   IndexOptions,
   InsertDocument,
   OriginalCollection,
@@ -621,7 +622,9 @@ export class Model<T> extends OriginalCollection<T> {
       }
       const { index, required: _required, ...otherParams } = map;
       if (index === "text") {
-        console.warn("not implement text index"); // TODO implement text index
+        console.warn(
+          yellow(`InitModel not implement [${green("text index")}]`),
+        ); // TODO implement text index
         continue;
       }
       indexes.push({

@@ -2,7 +2,7 @@
 import { MongoClient } from "../client.ts";
 import { Model } from "../model.ts";
 import { Database } from "../../deps.ts";
-import {getModelByName, SchemaCls} from "../schema.ts";
+import { getModelByName, SchemaCls } from "../schema.ts";
 
 let client: MongoClient | undefined;
 
