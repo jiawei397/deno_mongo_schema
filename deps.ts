@@ -13,6 +13,7 @@ export type {
   Document,
   Filter,
   FindOptions,
+  IndexOptions,
   InsertDocument,
   InsertOptions,
   ListDatabaseInfo,

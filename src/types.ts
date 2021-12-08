@@ -4,6 +4,7 @@ import {
   Document,
   Filter,
   FindOptions,
+  IndexOptions,
   InsertOptions,
   UpdateOptions,
 } from "../deps.ts";
@@ -43,18 +44,22 @@ export type MongoHookCallback = (...args: any[]) => void;
 
 export type Hooks = Map<MongoHookMethod, MongoHookCallback[]>;
 
-export interface SchemaType {
-  unique?: boolean;
-  sparse?: boolean; // 间隙索引
-  index?: boolean;
+export interface SchemaType extends Partial<IndexOptions> {
+  index?: boolean | "text";
 
   /**
    * Adds a required validator to this SchemaType
    */
   required?: boolean | [required: boolean, errorMsg: string];
 
-  default?: any;
+  /**
+   * It can be a function or be an real object. If you want to use current Date, you can set it to `Date.now`.
+   */
+  default?: () => any | any;
 
+  /**
+   * An alias as expireAfterSeconds
+   */
   expires?: number; // seconds
 
   validate?: {

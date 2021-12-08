@@ -15,7 +15,7 @@ class User extends Schema {
 
   @Prop({
     required: true,
-    index: "text",
+    index: true,
   })
   name!: string;
 

@@ -6,6 +6,7 @@ import {
   DeleteOptions,
   Document,
   Filter,
+  IndexOptions,
   InsertDocument,
   OriginalCollection,
   UpdateFilter,
@@ -612,21 +613,22 @@ export class Model<T> extends OriginalCollection<T> {
   async initModel() {
     assert(this.#schema, "schema is not defined");
     const data = getMetadata(this.#schema);
-    const indexes = [];
+    const indexes: IndexOptions[] = [];
     for (const key in data) {
       const map: SchemaType = data[key];
-      if (Object.keys(map).length === 0) {
+      if (Object.keys(map).length === 0 || !map.index) {
         continue;
       }
-      if (!map.index && !map.unique && !map.expires && !map.sparse) {
+      const { index, required: _required, ...otherParams } = map;
+      if (index === "text") {
+        console.warn("not implement text index"); // TODO implement text index
         continue;
       }
       indexes.push({
+        expireAfterSeconds: map.expires,
         name: key + "_1",
         key: { [key]: 1 },
-        unique: map.unique,
-        sparse: map.sparse,
-        expireAfterSeconds: map.expires,
+        ...otherParams,
       });
     }
 
