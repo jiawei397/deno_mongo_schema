@@ -14,7 +14,8 @@ class User extends Schema {
   age!: number;
 
   @Prop({
-    require: true,
+    required: true,
+    index: "text",
   })
   name!: string;
 

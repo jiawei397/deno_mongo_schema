@@ -48,9 +48,10 @@ export interface SchemaType {
   sparse?: boolean; // 间隙索引
   index?: boolean;
 
-  /** @deprecated please use require instead */
-  required?: boolean | [boolean, string];
-  require?: boolean | [boolean, string];
+  /**
+   * Adds a required validator to this SchemaType
+   */
+  required?: boolean | [required: boolean, errorMsg: string];
 
   default?: any;
 

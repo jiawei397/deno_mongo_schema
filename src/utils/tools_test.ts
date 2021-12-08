@@ -12,11 +12,11 @@ describe("tools", () => {
   it("User meta", () => {
     const userMeta = User.getMeta();
     assertEquals(userMeta.name, {
-      require: true,
+      required: true,
       index: true,
     });
     assertEquals(userMeta.age, {
-      require: false,
+      required: false,
     });
     assertExists(userMeta.createTime);
     assertExists(userMeta.modifyTime);
@@ -25,12 +25,12 @@ describe("tools", () => {
   it("get User meta", () => {
     const ageMeta = getMetadata(User, "age");
     assertEquals(ageMeta, {
-      require: false,
+      required: false,
     });
 
     const nameMeta = getMetadata(User, "name");
     assertEquals(nameMeta, {
-      require: true,
+      required: true,
       index: true,
     });
   });

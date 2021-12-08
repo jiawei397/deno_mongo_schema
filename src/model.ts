@@ -365,7 +365,7 @@ export class Model<T> extends OriginalCollection<T> {
             doc[key] = val.default;
           }
         }
-        const required = val.required || val.require;
+        const required = val.required;
         if (required) {
           if (doc[key] == null) {
             if (Array.isArray(required)) {

@@ -4,13 +4,13 @@ export const dbUrl = "mongodb://localhost:27017/test";
 
 export class User extends Schema {
   @Prop({
-    require: true,
+    required: true,
     index: true,
   })
   name!: string;
 
   @Prop({
-    require: false,
+    required: false,
   })
   age!: number;
 }
