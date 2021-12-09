@@ -6,7 +6,7 @@ import {
   DeleteOptions,
   Document,
   Filter,
-  green,
+  hasAtomicOperators,
   IndexOptions,
   InsertDocument,
   OriginalCollection,
@@ -481,7 +481,13 @@ export class Model<T> extends OriginalCollection<T> {
     options?: UpdateExOptions,
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
-    const res = await this.updateOne(filter, update, options);
+    let newUpdate: UpdateFilter<T> = {};
+    if (!hasAtomicOperators(update)) {
+      newUpdate["$set"] = update;
+    } else {
+      newUpdate = update;
+    }
+    const res = await this.updateOne(filter, newUpdate, options);
 
     if (options?.new) {
       if (res.matchedCount > 0) {

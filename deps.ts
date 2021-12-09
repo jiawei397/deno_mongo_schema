@@ -4,6 +4,7 @@ export {
   Database,
   MongoClient as OriginalMongoClient,
 } from "https://deno.land/x/mongo@v0.28.1/mod.ts";
+export { hasAtomicOperators } from "https://deno.land/x/mongo@v0.28.1/src/collection/collection.ts";
 export { WireProtocol } from "https://deno.land/x/mongo@v0.28.1/src/protocol/mod.ts";
 export { Cluster } from "https://deno.land/x/mongo@v0.28.1/src/cluster.ts";
 export type {
