@@ -11,4 +11,4 @@ export type { SchemaCls } from "./src/schema.ts";
 export * from "./src/factory.ts";
 
 export { Bson, Database } from "./deps.ts";
-export type { Document } from "./deps.ts";
+export type { Document, Filter, FindOptions } from "./deps.ts";
