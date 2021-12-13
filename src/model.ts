@@ -325,7 +325,7 @@ export class Model<T> extends OriginalCollection<T> {
 
     const fns = this.schema.getPreHookByMethod(hook);
     if (fns) {
-      await Promise.all(fns.map((fn) => fn(...args)));
+      await Promise.all(fns.map((fn) => fn.apply(this, args)));
     }
   }
 
@@ -335,7 +335,7 @@ export class Model<T> extends OriginalCollection<T> {
     }
     const fns = this.schema.getPostHookByMethod(hook);
     if (fns) {
-      await Promise.all(fns.map((fn) => fn(...args)));
+      await Promise.all(fns.map((fn) => fn.apply(this, args)));
     }
   }
 

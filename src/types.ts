@@ -32,12 +32,12 @@ export interface UpdateExOptions extends UpdateOptions {
 export type Constructor = new (...args: any[]) => any;
 
 export enum MongoHookMethod {
-  create,
-  update,
-  delete,
-  findMany,
-  findOne,
-  findOneAndUpdate,
+  create = "create",
+  update = "update",
+  delete = "delete",
+  findMany = "findMany",
+  findOne = "findOne",
+  findOneAndUpdate = "findOneAndUpdate",
 }
 
 export type MongoHookCallback = (...args: any[]) => void;
