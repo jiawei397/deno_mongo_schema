@@ -55,7 +55,7 @@ export interface SchemaType extends Partial<IndexOptions> {
   /**
    * It can be a function or be an real object. If you want to use current Date, you can set it to `Date.now`.
    */
-  default?: () => any | any;
+  default?: any;
 
   /**
    * An alias as expireAfterSeconds
