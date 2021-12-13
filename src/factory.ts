@@ -84,17 +84,46 @@ export class MongoFactory {
 /**
  * Register a model in the service and is used by [oak_nest](https://deno.land/x/oak_nest)
  */
-export const InjectModel = (modelNameOrCls: Constructor | string) =>
-  (target: Constructor, _property: any, index: number) => {
-    if (typeof modelNameOrCls === "string") {
-      Reflect.defineMetadata("design:inject" + index, {
-        params: [modelNameOrCls],
-        fn: MongoFactory.getModelByName.bind(MongoFactory),
-      }, target);
-    } else {
-      Reflect.defineMetadata("design:inject" + index, {
-        params: [modelNameOrCls],
-        fn: MongoFactory.getModel.bind(MongoFactory),
-      }, target);
-    }
+export function InjectModel(modelNameOrCls: SchemaCls | string) {
+  return (target: Constructor, _property: any, index: number) => {
+    Reflect.defineMetadata("design:inject" + index, () => {
+      if (typeof modelNameOrCls === "string") {
+        return MongoFactory.getModelByName(modelNameOrCls);
+      } else {
+        return MongoFactory.getModel(modelNameOrCls);
+      }
+    }, target);
   };
+}
+
+export class SchemaFactory {
+  static caches = new Map<string, SchemaCls>();
+
+  static register(name: string, schema: SchemaCls) {
+    this.caches.set(name, schema);
+  }
+
+  static getSchemaByName(name: string) {
+    return this.caches.get(name);
+  }
+
+  static createForClass(schema: SchemaCls) {
+    SchemaFactory.register(getFormattedModelName(schema.name), schema);
+    return schema;
+  }
+
+  static forFeature(arr: {
+    name: string;
+    schema: SchemaCls;
+  }[]) {
+    arr.forEach((item) => {
+      this.register(item.name, item.schema);
+    });
+  }
+}
+
+export function SchemaDecorator() {
+  return (target: SchemaCls) => {
+    SchemaFactory.createForClass(target);
+  };
+}

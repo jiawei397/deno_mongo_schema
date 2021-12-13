@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Prop, Schema, SchemaDecorator, SchemaFactory } from "./schema.ts";
+import { Prop, Schema } from "./schema.ts";
 import {
   assert,
   assertEquals,
@@ -12,7 +12,7 @@ import {
 import { dbUrl, User } from "../tests/common.ts";
 import { MongoHookMethod, UpdateExOptions } from "./types.ts";
 import { Bson, Document } from "../deps.ts";
-import { MongoFactory } from "./factory.ts";
+import { MongoFactory, SchemaDecorator, SchemaFactory } from "./factory.ts";
 
 await MongoFactory.forRoot(dbUrl);
 

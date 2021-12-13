@@ -11,8 +11,9 @@ import {
   parse,
   yellow,
 } from "../deps.ts";
+import { SchemaFactory } from "./factory.ts";
 import { Model } from "./model.ts";
-import { SchemaCls, SchemaFactory } from "./schema.ts";
+import { SchemaCls } from "./schema.ts";
 
 export class MongoClient {
   #cluster?: Cluster;

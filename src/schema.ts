@@ -145,38 +145,6 @@ export function getFormattedModelName(name: string) {
   return modelName.toLowerCase();
 }
 
-export function SchemaDecorator() {
-  return (target: SchemaCls) => {
-    SchemaFactory.createForClass(target);
-  };
-}
-
-export class SchemaFactory {
-  static caches = new Map<string, SchemaCls>();
-
-  static register(name: string, schema: SchemaCls) {
-    this.caches.set(name, schema);
-  }
-
-  static getSchemaByName(name: string) {
-    return this.caches.get(name);
-  }
-
-  static createForClass(schema: SchemaCls) {
-    SchemaFactory.register(getFormattedModelName(schema.name), schema);
-    return schema;
-  }
-
-  static forFeature(arr: {
-    name: string;
-    schema: SchemaCls;
-  }[]) {
-    arr.forEach((item) => {
-      this.register(item.name, item.schema);
-    });
-  }
-}
-
 export function addSchemaMetadata(
   target: Target,
   propertyKey: string,
