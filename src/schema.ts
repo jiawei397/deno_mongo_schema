@@ -1,16 +1,18 @@
 // deno-lint-ignore-file no-explicit-any
 import {
-  Constructor,
   Hooks,
   MongoHookCallback,
   MongoHookMethod,
   PopulateSelect,
   RealPopulateSelect,
   SchemaType,
+  Target,
   TargetInstance,
   VirtualTypeOptions,
 } from "./types.ts";
-import { addMetadata, getMetadata } from "./utils/tools.ts";
+import { Bson } from "../deps.ts";
+import { getInstance } from "./utils/tools.ts";
+const metadataCache = new Map();
 
 export function transferPopulateSelect(
   select?: PopulateSelect,
@@ -73,8 +75,8 @@ export class Schema {
   }
 
   static getMeta() {
-    const map = getMetadata(this);
-    const baseMap = getMetadata(Schema);
+    const map = getSchemaMetadata(this);
+    const baseMap = getSchemaMetadata(Schema);
     return {
       ...baseMap,
       ...map,
@@ -122,30 +124,80 @@ export class Schema {
   })
   modifyTime?: Date;
 
-  _id!: string; // default id
+  _id!: Bson.ObjectId | string; // default id
+  id?: string; // default id
 }
 
 export type SchemaCls = typeof Schema;
 
 export function Prop(props?: SchemaType) {
   return function (target: TargetInstance, propertyKey: string) {
-    addMetadata(target.constructor, propertyKey, props);
+    addSchemaMetadata(target.constructor, propertyKey, props);
     return target;
   };
 }
 
-const modelNameCaches = new Map<Constructor, string>();
-
-// one model can only have one schema
-export function getModelByName(cls: Constructor, name = cls.name) {
-  if (modelNameCaches.has(cls)) {
-    return modelNameCaches.get(cls);
-  }
+export function getFormattedModelName(name: string) {
   let modelName = name;
   if (!modelName.endsWith("s")) {
     modelName += "s";
   }
-  const last = modelName.toLowerCase();
-  modelNameCaches.set(cls, last);
-  return last;
+  return modelName.toLowerCase();
+}
+
+export function SchemaDecorator() {
+  return (target: SchemaCls) => {
+    SchemaFactory.createForClass(target);
+  };
+}
+
+export class SchemaFactory {
+  static caches = new Map<string, SchemaCls>();
+
+  static register(name: string, schema: SchemaCls) {
+    this.caches.set(name, schema);
+  }
+
+  static getSchemaByName(name: string) {
+    return this.caches.get(name);
+  }
+
+  static createForClass(schema: SchemaCls) {
+    SchemaFactory.register(getFormattedModelName(schema.name), schema);
+    return schema;
+  }
+
+  static forFeature(arr: {
+    name: string;
+    schema: SchemaCls;
+  }[]) {
+    arr.forEach((item) => {
+      this.register(item.name, item.schema);
+    });
+  }
+}
+
+export function addSchemaMetadata(
+  target: Target,
+  propertyKey: string,
+  props: any = {},
+) {
+  const instance = getInstance(target);
+  let map = metadataCache.get(instance);
+  if (!map) {
+    map = {};
+    metadataCache.set(instance, map);
+  }
+  map[propertyKey] = props;
+}
+
+export function getSchemaMetadata(
+  target: Target,
+  propertyKey?: string,
+) {
+  const map = metadataCache.get(getInstance(target));
+  if (propertyKey) {
+    return map[propertyKey];
+  }
+  return map;
 }

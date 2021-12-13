@@ -4,6 +4,7 @@
   // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+
     {
       "request": "launch",
       "name": "deno",
@@ -20,6 +21,23 @@
         "${file}"
       ],
       "attachSimplePort": 9229
+    },
+    {
+      "request": "launch",
+      "name": "test",
+      "type": "pwa-node",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "test",
+        "--inspect-brk",
+        "-A",
+        "--config",
+        "tsconfig.json",
+        "--unstable",
+        "${file}"
+      ],
+      "attachSimplePort": 9230
     }
   ]
 }

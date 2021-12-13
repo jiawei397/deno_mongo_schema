@@ -1,6 +1,6 @@
 # deno_mongo_schema
 
-Extend from **[deno_mongo v0.28.0](https://deno.land/x/mongo)**, support Schema
+Extend from **[deno_mongo v0.28.1](https://deno.land/x/mongo)**, support Schema
 and extend some API.
 
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
@@ -16,13 +16,14 @@ import {
   MongoHookMethod,
   Prop,
   Schema,
+  SchemaDecorator,
   UpdateExOptions,
 } from "https://deno.land/x/deno_mongo_schema@v0.2.1/mod.ts";
 import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.2.1/mod.ts";
 
-// const db = await getDB("mongodb://localhost:27017/test");
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
+@SchemaDecorator()
 class User extends Schema {
   @Prop()
   age!: number;
@@ -55,10 +56,9 @@ User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
   doc.name = "haha";
 });
 
-// const model = await getModel<User>(db, User);
-const model = await MongoFactory.getModel<User>(User);
+const userModel = await MongoFactory.getModel(User);
 
-const id = await model.insertOne({
+const id = await userModel.insertOne({
   "name": "zhangsan",
   "age": 18,
 });
@@ -68,7 +68,7 @@ User.post(MongoHookMethod.findOne, function (doc) {
 });
 
 // console.log(id);
-const info = await model.findById(id, {
+const info = await userModel.findById(id, {
   projection: {
     name: 1,
   },
@@ -79,19 +79,19 @@ User.post(MongoHookMethod.findMany, function (doc) {
   console.log("----post---findMany----", doc);
 });
 
-const arr = await model.findMany({});
+const arr = await userModel.findMany({});
 console.log(arr);
 
 User.post(MongoHookMethod.delete, function (doc) {
   console.log("----post---delete----", doc);
 });
 
-const del = await model.deleteOne({
+const del = await userModel.deleteOne({
   name: "zhangsan",
 });
 console.log(del);
 
-const delMulti = await model.deleteMany({
+const delMulti = await userModel.deleteMany({
   name: "zhangsan",
 });
 console.log(delMulti);
@@ -106,10 +106,12 @@ import {
   MongoFactory,
   Prop,
   Schema,
+  SchemaDecorator,
 } from "https://deno.land/x/deno_mongo_schema@v0.2.1/mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
+@SchemaDecorator()
 class User extends Schema {
   @Prop()
   group!: string;
@@ -118,6 +120,7 @@ class User extends Schema {
   title!: string;
 }
 
+@SchemaDecorator()
 class Role extends Schema {
   @Prop()
   userId!: string;
@@ -143,8 +146,7 @@ Role.virtual("user", {
 // Role.populate("user", "-group -createTime");
 // Role.populate("user", "title group");
 
-// const userModel = await MongoFactory.getModel<User>(db, User);
-const roleModel = await MongoFactory.getModel<Role>(db, Role);
+const roleModel = await MongoFactory.getModel(Role);
 
 // roleModel.insertOne({
 //   userId: id,
@@ -173,6 +175,31 @@ console.log(
 );
 ```
 
+## Special collection name
+
+If you donnot want to use the default collection name, you must regiter it by
+yourself.
+
+```ts
+SchemaFactory.register("mongo_test_schema_roles", Role);
+```
+
+Then if you still want to use virtual, you must use your registered name instead
+of Schema Class.
+
+```ts
+User.virtual("role", {
+  ref: "mongo_test_schema_roles",
+  localField: "roleId",
+  foreignField: "_id",
+  justOne: true,
+  // isTransformLocalFieldToObjectID: true,
+  // isTransformObjectIDToLocalField: true
+});
+```
+
 ## TODO
 
-- [ ] Modify schema as a decorator
+- [x] Modify schema as a decorator
+- [ ] Configurable whether to convert _id
+- [ ] Configurable the createTime and modifyTime

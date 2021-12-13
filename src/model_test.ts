@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Prop, Schema } from "./schema.ts";
+import { Prop, Schema, SchemaDecorator, SchemaFactory } from "./schema.ts";
 import {
   assert,
   assertEquals,
@@ -15,11 +15,12 @@ import { Bson, Document } from "../deps.ts";
 import { MongoFactory } from "./factory.ts";
 
 await MongoFactory.forRoot(dbUrl);
-const userModel = await MongoFactory.getModel<User>(
-  User,
-  "mongo_test_schema_users",
-);
 
+// if want to use other name, must use `SchemaFactory.register` to register and use ` MongoFactory.getModel(User, "xxx")`
+// SchemaFactory.register("mongo_test_schema_users", User);
+const userModel = await MongoFactory.getModel(User);
+
+@SchemaDecorator()
 class Role extends Schema {
   @Prop()
   userId!: string | Bson.ObjectId;
@@ -30,18 +31,18 @@ class Role extends Schema {
   user?: User;
 }
 
-Role.virtual("user", {
-  ref: User,
+const RoleSchema = SchemaFactory.createForClass(Role);
+
+RoleSchema.virtual("user", {
+  ref: User, //"mongo_test_schema_users", // if use default name, can use class like `ref: User`
   localField: "userId",
   foreignField: "_id",
   justOne: true,
   isTransformLocalFieldToObjectID: true,
 });
 
-const roleModel = await MongoFactory.getModel<Role>(
-  Role,
-  "mongo_test_schema_roles",
-);
+// SchemaFactory.register("mongo_test_schema_roles", Role);
+const roleModel = await MongoFactory.getModel(Role); // "mongo_test_schema_roles");
 
 describe("collection", () => {
   beforeEach(() => {
@@ -299,7 +300,7 @@ describe("populates", () => {
       },
     });
     assertEquals(arr.length, 2);
-    assertEquals(Array.isArray(arr[0].user), false, "justOne work");
+    assert(!Array.isArray(arr[0].user), "justOne work");
     assertEquals(arr[0].user!.name, user1.name);
     assertEquals(arr[0].user!.age, user1.age);
     assertEquals(arr[1].user!.name, user2.name);

@@ -76,7 +76,7 @@ export type TargetInstance = any;
 
 export interface VirtualTypeOptions {
   /** If `ref` is not nullish, this becomes a populated virtual. */
-  ref: Constructor;
+  ref: Constructor | string;
 
   /**  The local field to populate on if this is a populated virtual. */
   localField: string;

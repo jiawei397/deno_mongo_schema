@@ -1,5 +1,4 @@
 // deno-lint-ignore-file
-// import { Database } from "./database.ts";
 import {
   assert,
   BuildInfo,
@@ -13,10 +12,9 @@ import {
   yellow,
 } from "../deps.ts";
 import { Model } from "./model.ts";
-import { SchemaCls } from "./schema.ts";
+import { SchemaCls, SchemaFactory } from "./schema.ts";
 
 export class MongoClient {
-  // cache db
   #cluster?: Cluster;
   #defaultDbName = "admin";
   #buildInfo?: BuildInfo;
@@ -99,23 +97,26 @@ export class MongoClient {
     return this.#initedDBPromise;
   }
 
-  async getCollection<T = Document>(name: string, schema: SchemaCls) {
+  async getCollection<T = Document>(name: string) {
     assert(this.#initedDBPromise);
     const db = await this.#initedDBPromise;
+    const schema = SchemaFactory.getSchemaByName(name);
+    assert(schema, `Schema [${name}] must be registered`);
     return this.getCollectionByDb<T>(db, name, schema);
   }
 
-  async getCollectionByDb<T = Document>(
+  async getCollectionByDb<T>(
     db: Database,
     name: string,
     schema: SchemaCls,
   ) {
     assert(this.#cluster);
-    return new Model<T>(
+    const model = new Model<T>(
       this.#cluster.protocol,
       db.name,
       name,
-      schema,
     );
+    model.setSchema(schema);
+    return model;
   }
 }

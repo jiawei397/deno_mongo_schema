@@ -11,10 +11,13 @@ import {
   InsertDocument,
   OriginalCollection,
   UpdateFilter,
-  WireProtocol,
   yellow,
 } from "../deps.ts";
-import { getModelByName, SchemaCls, transferPopulateSelect } from "./schema.ts";
+import {
+  getFormattedModelName,
+  SchemaCls,
+  transferPopulateSelect,
+} from "./schema.ts";
 import {
   FindExOptions,
   InsertExOptions,
@@ -26,19 +29,17 @@ import {
   UpdateOneResult,
   VirtualTypeOptions,
 } from "./types.ts";
-import { getMetadata, transStringToMongoId } from "./utils/tools.ts";
+import { transStringToMongoId } from "./utils/tools.ts";
 
 export class Model<T> extends OriginalCollection<T> {
   #schema: SchemaCls | undefined;
 
-  constructor(
-    protocol: WireProtocol,
-    dbName: string,
-    readonly name: string,
-    schema?: SchemaCls,
-  ) {
-    super(protocol, dbName, name);
+  setSchema(schema: SchemaCls) {
     this.#schema = schema;
+  }
+
+  private get schema() {
+    return this.#schema;
   }
 
   private getPopulateMap(populates?: Record<string, PopulateSelect>) {
@@ -49,13 +50,13 @@ export class Model<T> extends OriginalCollection<T> {
         populateMap.set(key, transferPopulateSelect(populates[key]));
       }
     } else {
-      populateMap = this.#schema?.getPopulateMap();
+      populateMap = this.schema?.getPopulateMap();
     }
     return populateMap;
   }
 
   protected getPopulateParams() {
-    return this.#schema?.getPopulateParams();
+    return this.schema?.getPopulateParams();
   }
 
   private _find(
@@ -132,7 +133,9 @@ export class Model<T> extends OriginalCollection<T> {
       if (!populateMap.has(key)) {
         continue;
       }
-      const from = getModelByName(value.ref);
+      const from = typeof value.ref === "string"
+        ? value.ref
+        : getFormattedModelName(value.ref.name);
       if (
         value.isTransformLocalFieldToObjectID ||
         value.isTransformObjectIDToLocalField
@@ -316,21 +319,21 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private async preHooks(hook: MongoHookMethod, ...args: any[]) {
-    if (!this.#schema) {
+    if (!this.schema) {
       return;
     }
 
-    const fns = this.#schema.getPreHookByMethod(hook);
+    const fns = this.schema.getPreHookByMethod(hook);
     if (fns) {
       await Promise.all(fns.map((fn) => fn(...args)));
     }
   }
 
   private async postHooks(hook: MongoHookMethod, ...args: any[]) {
-    if (!this.#schema) {
+    if (!this.schema) {
       return;
     }
-    const fns = this.#schema.getPostHookByMethod(hook);
+    const fns = this.schema.getPostHookByMethod(hook);
     if (fns) {
       await Promise.all(fns.map((fn) => fn(...args)));
     }
@@ -338,15 +341,18 @@ export class Model<T> extends OriginalCollection<T> {
 
   // check before insert
   private async preInsert(docs: Document[]) {
-    if (!this.#schema) {
+    if (!this.schema) {
       return;
     }
 
     await this.preHooks(MongoHookMethod.create, docs);
 
-    const data = this.#schema.getMeta();
+    const data = this.schema.getMeta();
     for (const key in data) {
       const val: SchemaType = data[key];
+      if (!val) {
+        continue;
+      }
       docs.forEach((doc) => {
         for (const dk in doc) {
           if (!Object.prototype.hasOwnProperty.call(data, dk) && dk !== "_id") {
@@ -508,8 +514,8 @@ export class Model<T> extends OriginalCollection<T> {
   ) {
     this.formatBsonId(filter);
 
-    if (this.#schema) {
-      const data = this.#schema.getMeta();
+    if (this.schema) {
+      const data = this.schema.getMeta();
       const removeKey = (doc: any) => {
         for (const dk in doc) {
           if (!Object.prototype.hasOwnProperty.call(doc, dk)) {
@@ -618,12 +624,12 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   async initModel() {
-    assert(this.#schema, "schema is not defined");
-    const data = getMetadata(this.#schema);
+    assert(this.schema, "schema is not defined");
+    const data = this.schema.getMeta();
     const indexes: IndexOptions[] = [];
     for (const key in data) {
       const map: SchemaType = data[key];
-      if (Object.keys(map).length === 0 || !map.index) {
+      if (!map || Object.keys(map).length === 0 || !map.index) {
         continue;
       }
       const { index, required: _required, ...otherParams } = map;

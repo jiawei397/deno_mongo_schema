@@ -9,7 +9,7 @@ import {
 } from "../deps.ts";
 import { MongoClient } from "./client.ts";
 import { Model } from "./model.ts";
-import { getModelByName, Schema, SchemaCls } from "./schema.ts";
+import { getFormattedModelName, SchemaCls } from "./schema.ts";
 import { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
 
@@ -17,7 +17,6 @@ export class MongoFactory {
   static #client: MongoClient | undefined;
   static #initPromise: Promise<any> | undefined;
   static #modelCaches = new Map<SchemaCls, Model<any>>();
-  static #schemaCaches = new Map<SchemaCls, string>();
 
   static get client() {
     if (!this.#client) {
@@ -31,66 +30,71 @@ export class MongoFactory {
     return this.#initPromise;
   }
 
-  static async getModel<T extends Schema>(
-    cls: SchemaCls,
+  /**
+   * If you donnot pass the name, then will use the default name.
+   *
+   * If you want to use other name, you have to use `SchemaFactory.register` first and pass the name parameter.
+   */
+  static async getModel<T extends SchemaCls>(
+    cls: T,
     name?: string,
-  ): Promise<Model<T>> {
-    assert(this.#initPromise, "must be inited");
-    await this.#initPromise;
+  ): Promise<Model<InstanceType<T>>> {
     let model = this.#modelCaches.get(cls);
     if (model) {
       return model;
     }
-    const modelName = getModelByName(
-      cls,
-      name || this.getSchemaName(cls),
-    );
-    assert(modelName, "model name is empty");
-    model = await this.client.getCollection<T>(
-      modelName,
-      cls,
-    );
+    const modelName = name || getFormattedModelName(cls.name);
+    model = await this.getModelByName<T>(modelName);
     this.#modelCaches.set(cls, model);
-    await model.initModel()
-      .catch((err: MongoServerError) => {
-        if (
-          err.code === ErrorCode.IndexOptionsConflict ||
-          err.code === ErrorCode.IndexKeySpecsConflict
-        ) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
-          console.debug(
-            `Init index caused conflict error: ${err.message}, and will try to drop it and create it again`,
-          );
-          return model!.syncIndexes();
-        }
-        return Promise.reject(err);
-      })
-      .catch(console.error); // this will not stop the app`s startup.
-    console.log(`${yellow("Schema")} [${green(modelName)}] ${blue("init ok")}`);
     return model;
   }
 
-  static registerSchema(name: string, cls: SchemaCls) {
-    this.#schemaCaches.set(cls, name);
-  }
-
-  static getSchemaName(cls: SchemaCls) {
-    return this.#schemaCaches.get(cls);
-  }
-
-  static forFeature(arr: {
-    name: string;
-    schema: typeof Schema;
-  }[]) {
-    arr.forEach((item) => {
-      this.registerSchema(item.name, item.schema);
-    });
+  static async getModelByName<T extends SchemaCls>(
+    name: string,
+  ): Promise<Model<InstanceType<T>>> {
+    assert(this.#initPromise, "must be inited");
+    await this.#initPromise;
+    const model = await this.client.getCollection<InstanceType<T>>(name);
+    try {
+      await model.initModel();
+    } catch (e) {
+      const err = e as MongoServerError;
+      if (
+        err.code === ErrorCode.IndexOptionsConflict ||
+        err.code === ErrorCode.IndexKeySpecsConflict
+      ) { //Error: MongoError: {"ok":0,"errmsg":"Index with name: username_1 already exists with different options","code":85,"codeName":"IndexOptionsConflict"}
+        console.debug(
+          `Init index caused conflict error: ${err.message}, and will try to drop it and create it again`,
+        );
+        await model!.syncIndexes().catch((err: Error) => {
+          console.error(
+            "Tried to syncIndexes but still failed and the reason is ",
+            err,
+          );
+        });
+      } else {
+        console.error("InitModel error", err);
+      }
+    }
+    console.log(`${yellow("Schema")} [${green(name)}] ${blue("init ok")}`);
+    return model;
   }
 }
 
-export const InjectModel = (Cls: Constructor) =>
+/**
+ * Register a model in the service and is used by [oak_nest](https://deno.land/x/oak_nest)
+ */
+export const InjectModel = (modelNameOrCls: Constructor | string) =>
   (target: Constructor, _property: any, index: number) => {
-    Reflect.defineMetadata("design:inject" + index, {
-      params: [Cls],
-      fn: MongoFactory.getModel.bind(MongoFactory),
-    }, target);
+    if (typeof modelNameOrCls === "string") {
+      Reflect.defineMetadata("design:inject" + index, {
+        params: [modelNameOrCls],
+        fn: MongoFactory.getModelByName.bind(MongoFactory),
+      }, target);
+    } else {
+      Reflect.defineMetadata("design:inject" + index, {
+        params: [modelNameOrCls],
+        fn: MongoFactory.getModel.bind(MongoFactory),
+      }, target);
+    }
   };
