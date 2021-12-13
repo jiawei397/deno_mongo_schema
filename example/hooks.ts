@@ -3,12 +3,14 @@ import {
   MongoHookMethod,
   Prop,
   Schema,
+  SchemaDecorator,
   UpdateExOptions,
 } from "../mod.ts";
 import type { Document } from "../mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
+@SchemaDecorator()
 class User extends Schema {
   @Prop()
   age!: number;
@@ -43,7 +45,7 @@ User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
   doc.name = "haha";
 });
 
-const model = await MongoFactory.getModel<User>(User);
+const model = await MongoFactory.getModel(User);
 
 const id = await model.insertOne({
   "name": "zhangsan",
@@ -115,5 +117,3 @@ const res3 = await model.findOneAndUpdate({
   new: true,
 });
 console.log(res3);
-
-model.replaceOne;
