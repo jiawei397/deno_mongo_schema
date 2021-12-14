@@ -124,7 +124,7 @@ export class Schema {
   })
   modifyTime?: Date;
 
-  _id!: Bson.ObjectId | string; // default id
+  _id?: Bson.ObjectId | string; // default id
   id?: string; // default id
 }
 
