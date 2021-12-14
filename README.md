@@ -4,7 +4,7 @@ Extend from **[deno_mongo v0.28.1](https://deno.land/x/mongo)**, support Schema
 and extend some API.
 
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
-[![tag](https://img.shields.io/badge/deno-v1.8.1-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno-v1.16.2-green.svg)](https://github.com/denoland/deno)
 
 ## hooks
 
