@@ -352,11 +352,41 @@ describe("populates", () => {
       },
     });
     assertEquals(arr.length, 2);
-    assertEquals(arr.length, 2);
     const user = arr[0].user!;
     assertEquals(user.name, undefined);
     assertEquals(user._id, undefined);
     assertExists(user.age);
+  });
+
+  it("find populates is true", async () => {
+    const arr = await roleModel.findMany({}, {
+      populates: {
+        user: true,
+      },
+    });
+    assertEquals(arr.length, 2);
+    const user = arr[0].user!;
+    assertEquals(Object.keys(user), [
+      "name",
+      "age",
+      "createTime",
+      "modifyTime",
+      "id",
+    ]);
+    assert(user.name);
+    assert(user.age);
+    assert(user.id);
+  });
+
+  it("find populates is false", async () => {
+    const arr = await roleModel.findMany({}, {
+      populates: {
+        user: false,
+      },
+    });
+    assertEquals(arr.length, 2);
+    assert(!arr[0].user);
+    assert(!arr[1].user);
   });
 });
 

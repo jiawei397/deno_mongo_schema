@@ -43,16 +43,19 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   private getPopulateMap(populates?: Record<string, PopulateSelect>) {
-    let populateMap: Map<string, RealPopulateSelect> | undefined;
     if (populates) {
-      populateMap = new Map();
+      const populateMap = new Map();
       for (const key in populates) {
-        populateMap.set(key, transferPopulateSelect(populates[key]));
+        if (populates[key]) {
+          populateMap.set(key, transferPopulateSelect(populates[key]));
+        }
+      }
+      if (populateMap.size > 0) {
+        return populateMap;
       }
     } else {
-      populateMap = this.schema?.getPopulateMap();
+      return this.schema?.getPopulateMap();
     }
-    return populateMap;
   }
 
   protected getPopulateParams() {
@@ -224,7 +227,7 @@ export class Model<T> extends OriginalCollection<T> {
       return;
     }
     for (const [key, value] of params) {
-      if (!map.has(key) || !doc[key]) {
+      if (!map.has(key) || !doc[key] || !populates || !populates[key]) {
         continue;
       }
       const arr = doc[key] as any[];
@@ -287,8 +290,10 @@ export class Model<T> extends OriginalCollection<T> {
       }
       return newObj;
     } else {
-      if (pickMap === true) {
-        this.transferId(virtualDoc, remainOriginId);
+      if (typeof pickMap === "boolean") {
+        if (pickMap) {
+          this.transferId(virtualDoc, remainOriginId);
+        }
       } else {
         for (const k in pickMap) {
           if (!pickMap[k]) {

@@ -17,7 +17,7 @@ const metadataCache = new Map();
 export function transferPopulateSelect(
   select?: PopulateSelect,
 ): RealPopulateSelect {
-  let _select: any = select || true;
+  let _select: any = select ?? true;
   if (typeof select === "string") {
     _select = {};
     select.split(" ").forEach((item) => {
@@ -70,7 +70,9 @@ export class Schema {
     select?: PopulateSelect,
   ) {
     const _select = transferPopulateSelect(select);
-    this.populateMap.set(path, _select);
+    if (_select) {
+      this.populateMap.set(path, _select);
+    }
     return this;
   }
 

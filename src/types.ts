@@ -9,7 +9,7 @@ import {
   UpdateOptions,
 } from "../deps.ts";
 
-export type PopulateSelect = string | Record<string, 0 | 1> | true;
+export type PopulateSelect = string | boolean | Record<string, 0 | 1>;
 
 export type RealPopulateSelect = Exclude<PopulateSelect, string>;
 
