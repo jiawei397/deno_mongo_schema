@@ -637,7 +637,13 @@ export class Model<T> extends OriginalCollection<T> {
       if (!map || Object.keys(map).length === 0 || !map.index) {
         continue;
       }
-      const { index, required: _required, ...otherParams } = map;
+      const {
+        index,
+        required: _required,
+        default: _default,
+        validate: _validate,
+        ...otherParams
+      } = map;
       indexes.push({
         expireAfterSeconds: map.expires,
         name: key + "_1",
