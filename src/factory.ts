@@ -16,7 +16,7 @@ import { ErrorCode } from "./error.ts";
 export class MongoFactory {
   static #client: MongoClient | undefined;
   static #initPromise: Promise<any> | undefined;
-  static #modelCaches = new Map<SchemaCls, Model<any>>();
+  static #modelCaches = new Map<string, Promise<Model<any>>>();
 
   static get client() {
     if (!this.#client) {
@@ -35,21 +35,15 @@ export class MongoFactory {
    *
    * If you want to use other name, you have to use `SchemaFactory.register` first and pass the name parameter.
    */
-  static async getModel<T extends SchemaCls>(
+  static getModel<T extends SchemaCls>(
     cls: T,
     name?: string,
   ): Promise<Model<InstanceType<T>>> {
-    let model = this.#modelCaches.get(cls);
-    if (model) {
-      return model;
-    }
     const modelName = name || getFormattedModelName(cls.name);
-    model = await this.getModelByName<T>(modelName);
-    this.#modelCaches.set(cls, model);
-    return model;
+    return this.getModelByName<T>(modelName);
   }
 
-  static async getModelByName<T extends SchemaCls>(
+  static async #getModelByName<T extends SchemaCls>(
     name: string,
   ): Promise<Model<InstanceType<T>>> {
     assert(this.#initPromise, "must be inited");
@@ -78,6 +72,16 @@ export class MongoFactory {
     }
     console.log(`${yellow("Schema")} [${green(name)}] ${blue("init ok")}`);
     return model;
+  }
+
+  static getModelByName<T extends SchemaCls>(name: string) {
+    let promise = this.#modelCaches.get(name);
+    if (promise) {
+      return promise;
+    }
+    promise = this.#getModelByName<T>(name);
+    this.#modelCaches.set(name, promise);
+    return promise;
   }
 }
 
