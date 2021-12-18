@@ -6,6 +6,7 @@ import {
   DeleteOptions,
   Document,
   Filter,
+  FindOptions,
   hasAtomicOperators,
   IndexOptions,
   InsertDocument,
@@ -23,7 +24,6 @@ import {
   InsertExOptions,
   MongoHookMethod,
   PopulateSelect,
-  RealPopulateSelect,
   SchemaType,
   UpdateExOptions,
   UpdateOneResult,
@@ -190,6 +190,17 @@ export class Model<T> extends OriginalCollection<T> {
       await this.postHooks(MongoHookMethod.findOne, docs, filter, options);
       this.formatFindDoc(docs, options);
     }
+  }
+
+  /**
+   * this is the origin find method,
+   * but it will not call pre/post hooks, will not format the id, and not use virtual populate.
+   */
+  find(
+    filter?: Filter<T>,
+    options?: FindOptions,
+  ) {
+    return super.find(filter, options);
   }
 
   async findOne(
