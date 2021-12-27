@@ -24,7 +24,6 @@ export type FindExOptions = FindOptions & {
 export type InsertExOptions = InsertOptions & ExOptions;
 
 export interface UpdateExOptions extends UpdateOptions {
-  /** @deprecated Not recommended */
   new?: boolean;
   /** @deprecated Please drop it soon */
   useFindAndModify?: boolean;

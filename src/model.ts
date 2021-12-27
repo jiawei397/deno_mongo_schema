@@ -487,7 +487,7 @@ export class Model<T> {
     id: string | Bson.ObjectId,
     update: UpdateFilter<T>,
     options: UpdateExOptions,
-  ): Promise<T | null>;
+  ): Promise<T | undefined>;
   findByIdAndUpdate(
     id: string | Bson.ObjectId,
     update: UpdateFilter<T>,
@@ -524,32 +524,25 @@ export class Model<T> {
     filter: Filter<T>,
     update: UpdateFilter<T>,
     options: UpdateExOptions,
-  ): Promise<T | null>;
+  ): Promise<T | undefined>;
   async findOneAndUpdate(
     filter: Filter<T>,
     update: UpdateFilter<T>,
     options?: UpdateExOptions,
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
-    let newUpdate: UpdateFilter<T> = {};
-    if (!hasAtomicOperators(update)) {
-      newUpdate["$set"] = update;
-    } else {
-      newUpdate = update;
-    }
-    const res = await this.#collection.updateOne(filter, newUpdate, options);
-
     if (options?.new) {
-      if (res.matchedCount > 0) {
-        const updatedDoc = await this.findById(res.upsertedId);
-        await this.afterFindOneAndUpdate(updatedDoc);
-        return updatedDoc;
-      } else {
-        return null;
-      }
+      const updatedDoc = await this.#collection.findAndModify(filter, {
+        update,
+        new: true,
+      });
+      await this.afterFindOneAndUpdate(updatedDoc);
+      return updatedDoc;
+    } else {
+      const res = await this.#collection.updateOne(filter, update, options);
+      await this.afterFindOneAndUpdate(res);
+      return res;
     }
-    await this.afterFindOneAndUpdate(res);
-    return res;
   }
 
   /**
@@ -585,13 +578,23 @@ export class Model<T> {
       removeKey(doc);
     }
 
-    // add modifyTime
-    if (doc["$set"]) {
-      doc["$set"]["modifyTime"] = new Date();
+    if (!hasAtomicOperators(doc)) {
+      const oldDoc = { ...doc, modifyTime: new Date() };
+      for (const key in doc) {
+        if (Object.prototype.hasOwnProperty.call(doc, key)) {
+          delete doc[key];
+        }
+      }
+      doc["$set"] = oldDoc;
     } else {
-      doc["$set"] = {
-        modifyTime: new Date(),
-      };
+      // add modifyTime
+      if (doc["$set"]) {
+        doc["$set"]["modifyTime"] = new Date();
+      } else {
+        doc["$set"] = {
+          modifyTime: new Date(),
+        };
+      }
     }
     await this.preHooks(hook, filter, doc, options);
   }
