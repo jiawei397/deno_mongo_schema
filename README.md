@@ -40,7 +40,9 @@ class User extends Schema {
   expires?: Date;
 }
 
-User.pre(
+const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre(
   MongoHookMethod.update,
   function (filter: Document, doc: Document, options?: UpdateExOptions) {
     console.log("----pre----", filter, doc, options);
@@ -51,7 +53,7 @@ User.pre(
   },
 );
 
-User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
+UserSchema.post(MongoHookMethod.findOneAndUpdate, function (doc) {
   console.log("----post----", doc);
   doc.name = "haha";
 });
@@ -63,7 +65,7 @@ const id = await userModel.insertOne({
   "age": 18,
 });
 
-User.post(MongoHookMethod.findOne, function (doc) {
+UserSchema.post(MongoHookMethod.findOne, function (doc) {
   console.log("----post---findOne----", doc);
 });
 
@@ -75,14 +77,14 @@ const info = await userModel.findById(id, {
 });
 console.log(info);
 
-User.post(MongoHookMethod.findMany, function (doc) {
+UserSchema.post(MongoHookMethod.findMany, function (doc) {
   console.log("----post---findMany----", doc);
 });
 
 const arr = await userModel.findMany({});
 console.log(arr);
 
-User.post(MongoHookMethod.delete, function (doc) {
+UserSchema.post(MongoHookMethod.delete, function (doc) {
   console.log("----post---delete----", doc);
 });
 
@@ -129,7 +131,9 @@ class Role extends Schema {
   name!: string;
 }
 
-Role.virtual("user", {
+const RoleSchema = SchemaFactory.createForClass(Role);
+
+RoleSchema.virtual("user", {
   ref: User,
   localField: "userId",
   foreignField: "_id",
@@ -181,14 +185,14 @@ If you donnot want to use the default collection name, you must regiter it by
 yourself.
 
 ```ts
-SchemaFactory.register("mongo_test_schema_roles", Role);
+SchemaFactory.createForClass(Role, "mongo_test_schema_roles");
 ```
 
 Then if you still want to use virtual, you must use your registered name instead
 of Schema Class.
 
 ```ts
-User.virtual("role", {
+UserSchema.virtual("role", {
   ref: "mongo_test_schema_roles",
   localField: "roleId",
   foreignField: "_id",

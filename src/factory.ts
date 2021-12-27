@@ -9,7 +9,7 @@ import {
 } from "../deps.ts";
 import { MongoClient } from "./client.ts";
 import { Model } from "./model.ts";
-import { getFormattedModelName, SchemaCls } from "./schema.ts";
+import { BaseSchema, getFormattedModelName } from "./schema.ts";
 import { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
 
@@ -35,20 +35,31 @@ export class MongoFactory {
    *
    * If you want to use other name, you have to use `SchemaFactory.register` first and pass the name parameter.
    */
-  static getModel<T extends SchemaCls>(
-    cls: T,
-    name?: string,
-  ): Promise<Model<InstanceType<T>>> {
-    const modelName = name || getFormattedModelName(cls.name);
-    return this.getModelByName<T>(modelName);
+  static getModel<T extends Constructor>(
+    Cls: T,
+  ): Promise<Model<InstanceType<T>>>;
+  static getModel<T>(
+    name: string,
+  ): Promise<Model<T>>;
+  static getModel<T>(
+    name: string,
+  ): Promise<Model<T>>;
+  static getModel(modelNameOrCls: any) {
+    let modelName;
+    if (typeof modelNameOrCls === "string") {
+      modelName = getFormattedModelName(modelNameOrCls);
+    } else {
+      modelName = getFormattedModelName(modelNameOrCls.name);
+    }
+    return this.getModelByName(modelName);
   }
 
-  static async #getModelByName<T extends SchemaCls>(
+  static async #getModelByName<T>(
     name: string,
-  ): Promise<Model<InstanceType<T>>> {
+  ): Promise<Model<T>> {
     assert(this.#initPromise, "must be inited");
     await this.#initPromise;
-    const model = await this.client.getCollection<InstanceType<T>>(name);
+    const model = await this.client.getCollection<T>(name);
     try {
       await model.initModel();
     } catch (e) {
@@ -74,12 +85,12 @@ export class MongoFactory {
     return model;
   }
 
-  static getModelByName<T extends SchemaCls>(name: string) {
+  private static getModelByName(name: string) {
     let promise = this.#modelCaches.get(name);
     if (promise) {
       return promise;
     }
-    promise = this.#getModelByName<T>(name);
+    promise = this.#getModelByName(name);
     this.#modelCaches.set(name, promise);
     return promise;
   }
@@ -88,37 +99,49 @@ export class MongoFactory {
 /**
  * Register a model in the service and is used by [oak_nest](https://deno.land/x/oak_nest)
  */
-export function InjectModel(modelNameOrCls: SchemaCls | string) {
+export function InjectModel(modelNameOrCls: Constructor | string) {
   return (target: Constructor, _property: any, index: number) => {
-    Reflect.defineMetadata("design:inject" + index, () => {
-      if (typeof modelNameOrCls === "string") {
-        return MongoFactory.getModelByName(modelNameOrCls);
-      } else {
-        return MongoFactory.getModel(modelNameOrCls);
-      }
-    }, target);
+    Reflect.defineMetadata(
+      "design:inject" + index,
+      () => {
+        if (typeof modelNameOrCls === "string") {
+          return MongoFactory.getModel(modelNameOrCls);
+        } else {
+          return MongoFactory.getModel(modelNameOrCls);
+        }
+      },
+      target,
+    );
   };
 }
 
 export class SchemaFactory {
-  static caches = new Map<string, SchemaCls>();
+  private static caches = new Map<string, BaseSchema>();
 
-  static register(name: string, schema: SchemaCls) {
-    this.caches.set(name, schema);
+  static register(name: string, schema: BaseSchema) {
+    this.caches.set(getFormattedModelName(name), schema);
+  }
+
+  static unregister(name: string) {
+    this.caches.delete(getFormattedModelName(name));
   }
 
   static getSchemaByName(name: string) {
-    return this.caches.get(name);
+    return this.caches.get(getFormattedModelName(name));
   }
 
-  static createForClass(schema: SchemaCls) {
-    SchemaFactory.register(getFormattedModelName(schema.name), schema);
+  static createForClass(Cls: Constructor, name = Cls.name) {
+    let schema = this.getSchemaByName(name);
+    if (!schema) {
+      schema = new BaseSchema(Cls);
+      this.register(name, schema);
+    }
     return schema;
   }
 
   static forFeature(arr: {
     name: string;
-    schema: SchemaCls;
+    schema: BaseSchema;
   }[]) {
     arr.forEach((item) => {
       this.register(item.name, item.schema);
@@ -126,8 +149,8 @@ export class SchemaFactory {
   }
 }
 
-export function SchemaDecorator() {
-  return (target: SchemaCls) => {
-    SchemaFactory.createForClass(target);
+export function SchemaDecorator(name?: string) {
+  return (target: Constructor) => {
+    SchemaFactory.createForClass(target, name);
   };
 }

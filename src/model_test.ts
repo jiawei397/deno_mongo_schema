@@ -9,15 +9,14 @@ import {
   describe,
   it,
 } from "../test.deps.ts";
-import { dbUrl, User } from "../tests/common.ts";
+import { User, UserSchema } from "../tests/common.ts";
 import { MongoHookMethod, UpdateExOptions } from "./types.ts";
 import { Bson, Document } from "../deps.ts";
 import { MongoFactory, SchemaDecorator, SchemaFactory } from "./factory.ts";
 
-await MongoFactory.forRoot(dbUrl);
-
-// if want to use other name, must use `SchemaFactory.register` to register and use ` MongoFactory.getModel(User, "xxx")`
-// SchemaFactory.register("mongo_test_schema_users", User);
+// if want to use other name, must use `SchemaFactory.createForClass` to register and use ` MongoFactory.getModel<User>("xxx")`
+// SchemaFactory.createForClass(User, "mongo_test_schema_users");
+// const userModel = await MongoFactory.getModel<User>('mongo_test_schema_users');
 const userModel = await MongoFactory.getModel(User);
 
 @SchemaDecorator()
@@ -46,7 +45,7 @@ const roleModel = await MongoFactory.getModel(Role); // "mongo_test_schema_roles
 
 describe("collection", () => {
   beforeEach(() => {
-    User.clearHooks();
+    UserSchema.clearHooks();
   });
 
   const user1Data = {
@@ -76,12 +75,12 @@ describe("collection", () => {
     assert(id, "id is not null");
 
     const inserted = "MongoHookMethod.find";
-    User.post(MongoHookMethod.findOne, function (doc) {
+    UserSchema.post(MongoHookMethod.findOne, function (doc: any) {
       assertNotEquals(doc, null, "hook findOne, doc must not be null");
       doc["inserted"] = inserted;
     });
 
-    User.post(MongoHookMethod.findMany, function (_docs) {
+    UserSchema.post(MongoHookMethod.findMany, function () {
       assert(false, "this will not be in");
     });
 
@@ -101,7 +100,7 @@ describe("collection", () => {
     const options = {
       new: true,
     };
-    User.pre(
+    UserSchema.pre(
       MongoHookMethod.update,
       function (
         filter: Document,
@@ -115,7 +114,7 @@ describe("collection", () => {
     );
 
     const insertedAddr = "haha";
-    User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
+    UserSchema.post(MongoHookMethod.findOneAndUpdate, function (doc) {
       assertNotEquals(
         doc,
         null,
@@ -125,6 +124,7 @@ describe("collection", () => {
     });
 
     const res: any = await userModel.findByIdAndUpdate(id, update, options);
+    assert(res);
     assertEquals(res.name, update.$set.name);
     assertEquals(res.age, update.$set.age);
     assertEquals(res.sex, undefined);
@@ -137,11 +137,11 @@ describe("collection", () => {
 
   it("find many", async () => {
     const manyInserted = "MongoHookMethod.findMany";
-    User.post(MongoHookMethod.findOne, function (_doc) {
+    UserSchema.post(MongoHookMethod.findOne, function (_doc) {
       assert(false, "this will not be in");
     });
 
-    User.post(MongoHookMethod.findMany, function (docs) {
+    UserSchema.post(MongoHookMethod.findMany, function (docs) {
       assert(Array.isArray(docs), "docs must be array");
       docs.forEach((doc) => {
         doc["inserted"] = manyInserted;

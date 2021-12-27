@@ -1,9 +1,11 @@
+// deno-lint-ignore-file no-explicit-any
 import {
   MongoFactory,
   MongoHookMethod,
   Prop,
   Schema,
   SchemaDecorator,
+  SchemaFactory,
   UpdateExOptions,
 } from "../mod.ts";
 import type { Document } from "../mod.ts";
@@ -29,7 +31,9 @@ class User extends Schema {
   expires?: Date;
 }
 
-User.pre(
+const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.pre(
   MongoHookMethod.update,
   function (filter: Document, doc: Document, options?: UpdateExOptions) {
     console.log("----pre----", filter, doc, options);
@@ -40,7 +44,7 @@ User.pre(
   },
 );
 
-User.post(MongoHookMethod.findOneAndUpdate, function (doc) {
+UserSchema.post(MongoHookMethod.findOneAndUpdate, function (doc: any) {
   console.log("----post----", doc);
   doc.name = "haha";
 });
@@ -52,13 +56,13 @@ const id = await model.insertOne({
   "age": 18,
 });
 
-const wangwuInfo = await model.save({
-  "name": "wangwu",
-  "age": 20,
-});
-console.log("wangwuInfo", wangwuInfo);
+// const wangwuInfo = await model.save({
+//   "name": "wangwu",
+//   "age": 20,
+// });
+// console.log("wangwuInfo", wangwuInfo);
 
-User.post(MongoHookMethod.findOne, function (doc) {
+UserSchema.post(MongoHookMethod.findOne, function (doc: any) {
   console.log("----post---findOne----", doc);
 });
 
@@ -70,14 +74,14 @@ const info = await model.findById(id, {
 });
 console.log(info);
 
-User.post(MongoHookMethod.findMany, function (doc) {
+UserSchema.post(MongoHookMethod.findMany, function (doc: any) {
   console.log("----post---findMany----", doc);
 });
 
 const arr = await model.findMany({});
 console.log(arr);
 
-User.post(MongoHookMethod.delete, function (doc) {
+UserSchema.post(MongoHookMethod.delete, function (doc: any) {
   console.log("----post---delete----", doc);
 });
 

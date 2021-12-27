@@ -3,6 +3,7 @@ import {
   assert,
   BuildInfo,
   Cluster,
+  Collection,
   ConnectOptions,
   Database,
   Document,
@@ -13,7 +14,7 @@ import {
 } from "../deps.ts";
 import { SchemaFactory } from "./factory.ts";
 import { Model } from "./model.ts";
-import { SchemaCls } from "./schema.ts";
+import { BaseSchema, getFormattedModelName } from "./schema.ts";
 
 export class MongoClient {
   #cluster?: Cluster;
@@ -103,21 +104,21 @@ export class MongoClient {
     const db = await this.#initedDBPromise;
     const schema = SchemaFactory.getSchemaByName(name);
     assert(schema, `Schema [${name}] must be registered`);
-    return this.getCollectionByDb<T>(db, name, schema);
+    const modelName = getFormattedModelName(name);
+    return this.getCollectionByDb<T>(db, modelName, schema);
   }
 
   async getCollectionByDb<T>(
     db: Database,
     name: string,
-    schema: SchemaCls,
+    schema: BaseSchema,
   ) {
     assert(this.#cluster);
-    const model = new Model<T>(
+    const collection = new Collection<T>(
       this.#cluster.protocol,
       db.name,
       name,
     );
-    model.setSchema(schema);
-    return model;
+    return new Model<T>(schema, collection);
   }
 }

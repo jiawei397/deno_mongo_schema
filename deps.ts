@@ -1,6 +1,6 @@
 export {
   Bson,
-  Collection as OriginalCollection,
+  Collection,
   Database,
   MongoClient as OriginalMongoClient,
 } from "https://deno.land/x/mongo@v0.29.0/mod.ts";
@@ -8,10 +8,15 @@ export { hasAtomicOperators } from "https://deno.land/x/mongo@v0.29.0/src/collec
 export { WireProtocol } from "https://deno.land/x/mongo@v0.29.0/src/protocol/mod.ts";
 export { Cluster } from "https://deno.land/x/mongo@v0.29.0/src/cluster.ts";
 export type {
+  AggregateOptions,
+  AggregatePipeline,
   BuildInfo,
   ConnectOptions,
+  CreateIndexOptions,
   DeleteOptions,
+  DistinctOptions,
   Document,
+  DropIndexOptions,
   Filter,
   FindOptions,
   IndexOptions,

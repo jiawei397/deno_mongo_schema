@@ -1,9 +1,15 @@
 // deno-lint-ignore-file no-unused-vars
-import { MongoFactory, Prop, Schema, SchemaDecorator } from "../mod.ts";
+import {
+  MongoFactory,
+  Prop,
+  Schema,
+  SchemaDecorator,
+  SchemaFactory,
+} from "../mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
-@SchemaDecorator()
+@SchemaDecorator("user1")
 class User extends Schema {
   @Prop()
   group!: string;
@@ -11,6 +17,8 @@ class User extends Schema {
   @Prop()
   title!: string;
 }
+
+// const UserSchema = SchemaFactory.createForClass(User);
 
 @SchemaDecorator()
 class Role extends Schema {
@@ -21,8 +29,10 @@ class Role extends Schema {
   name!: string;
 }
 
-Role.virtual("user", {
-  ref: User,
+const RoleSchema = SchemaFactory.createForClass(Role);
+
+RoleSchema.virtual("user", {
+  ref: "user1",
   localField: "userId",
   foreignField: "_id",
   justOne: true,
@@ -37,10 +47,11 @@ Role.virtual("user", {
 // Role.populate("user", "group");
 // Role.populate("user", "-group -createTime");
 // Role.populate("user", "title group");
-const roleModel = await MongoFactory.getModel(Role);
+const roleModel = await MongoFactory.getModel<Role>(Role.name);
+// const roleModel = await MongoFactory.getModel(Role);
 
 async function init() {
-  const userModel = await MongoFactory.getModel(User);
+  const userModel = await MongoFactory.getModel<User>("user1");
 
   const id = await userModel.insertOne({
     group: "spacex",

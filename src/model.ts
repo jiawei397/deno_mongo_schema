@@ -1,22 +1,28 @@
 // deno-lint-ignore-file no-explicit-any
 import {
+  AggregateOptions,
+  AggregatePipeline,
   assert,
   blue,
   Bson,
+  Collection,
+  CreateIndexOptions,
   DeleteOptions,
+  DistinctOptions,
   Document,
+  DropIndexOptions,
   Filter,
   FindOptions,
   hasAtomicOperators,
   IndexOptions,
   InsertDocument,
-  OriginalCollection,
+  InsertOptions,
   UpdateFilter,
   yellow,
 } from "../deps.ts";
 import {
+  BaseSchema,
   getFormattedModelName,
-  SchemaCls,
   transferPopulateSelect,
 } from "./schema.ts";
 import {
@@ -31,11 +37,21 @@ import {
 } from "./types.ts";
 import { transStringToMongoId } from "./utils/tools.ts";
 
-export class Model<T> extends OriginalCollection<T> {
-  #schema: SchemaCls | undefined;
+export class Model<T> {
+  #collection: Collection<T>;
 
-  setSchema(schema: SchemaCls) {
+  #schema: BaseSchema;
+
+  constructor(
+    schema: BaseSchema,
+    collection: Collection<T>,
+  ) {
     this.#schema = schema;
+    this.#collection = collection;
+  }
+
+  get collection() {
+    return this.#collection;
   }
 
   private get schema() {
@@ -58,7 +74,7 @@ export class Model<T> extends OriginalCollection<T> {
     }
   }
 
-  protected getPopulateParams() {
+  private getPopulateParams() {
     return this.schema?.getPopulateParams();
   }
 
@@ -81,7 +97,7 @@ export class Model<T> extends OriginalCollection<T> {
         options,
       });
     } else {
-      const res = super.find(
+      const res = this.#collection.find(
         filter,
         others,
       );
@@ -137,7 +153,7 @@ export class Model<T> extends OriginalCollection<T> {
         continue;
       }
       const from = typeof value.ref === "string"
-        ? value.ref
+        ? getFormattedModelName(value.ref)
         : getFormattedModelName(value.ref.name);
       if (
         value.isTransformLocalFieldToObjectID ||
@@ -166,7 +182,7 @@ export class Model<T> extends OriginalCollection<T> {
       });
     }
 
-    return this.aggregate(paramsArray);
+    return this.#collection.aggregate(paramsArray);
   }
 
   private async preFind(
@@ -193,14 +209,18 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   /**
-   * this is the origin find method,
+   * This is the origin find method,
    * but it will not call pre/post hooks, will not format the id, and not use virtual populate.
+   *
+   * So it is not recommended to use it directly.
+   * Please use findOne and findMany instead.
+   * @deprecated
    */
   find(
     filter?: Filter<T>,
     options?: FindOptions,
   ) {
-    return super.find(filter, options);
+    return this.#collection.find(filter, options);
   }
 
   async findOne(
@@ -263,7 +283,7 @@ export class Model<T> extends OriginalCollection<T> {
 
   private transferId(doc: any, remainOriginId?: boolean) {
     const hasOwnId = "id" in doc;
-    if (!hasOwnId) {
+    if (!hasOwnId && doc._id) {
       doc.id = doc._id.toString();
       if (!remainOriginId) {
         delete doc._id;
@@ -277,7 +297,7 @@ export class Model<T> extends OriginalCollection<T> {
     pickMap: Exclude<PopulateSelect, string>,
     remainOriginId?: boolean,
   ) {
-    let needPick = false; // if specified some key, then will pick this keys
+    let needPick = false; // if specified some key, then will only pick this keys
     if (typeof pickMap === "object") {
       for (const k in pickMap) {
         if (pickMap[k]) {
@@ -311,9 +331,9 @@ export class Model<T> extends OriginalCollection<T> {
             delete virtualDoc[k];
           }
         }
-        if (pickMap.id) {
-          this.transferId(virtualDoc, remainOriginId);
-        }
+        // if (pickMap.id) {
+        this.transferId(virtualDoc, remainOriginId);
+        // }
       }
       return virtualDoc;
     }
@@ -355,7 +375,6 @@ export class Model<T> extends OriginalCollection<T> {
     }
   }
 
-  // check before insert
   private async preInsert(docs: Document[]) {
     if (!this.schema) {
       return;
@@ -363,6 +382,10 @@ export class Model<T> extends OriginalCollection<T> {
 
     await this.preHooks(MongoHookMethod.create, docs);
 
+    this.checkMetaBeforeInsert(docs);
+  }
+
+  private checkMetaBeforeInsert(docs: Document[]) {
     const data = this.schema.getMeta();
     for (const key in data) {
       const val: SchemaType = data[key];
@@ -415,19 +438,24 @@ export class Model<T> extends OriginalCollection<T> {
     await this.postHooks(MongoHookMethod.create, docs);
   }
 
+  async insertOne(doc: InsertDocument<T>, options?: InsertOptions) {
+    const { insertedIds } = await this.insertMany([doc], options);
+    return insertedIds[0];
+  }
+
   async insertMany(
     docs: InsertDocument<T>[],
     options?: InsertExOptions,
   ) {
     await this.preInsert(docs);
-    const res = await super.insertMany(docs, options);
+    const res = await this.#collection.insertMany(docs, options);
     await this.afterInsert(docs);
     return res;
   }
 
   /** @deprecated please use insertOne instead */
   async save(doc: InsertDocument<T>, options?: InsertExOptions) {
-    const id = await super.insertOne(doc, options);
+    const id = await this.#collection.insertOne(doc, options);
     const res = {
       ...doc,
       _id: id,
@@ -440,8 +468,7 @@ export class Model<T> extends OriginalCollection<T> {
     update: Document,
     options?: UpdateExOptions,
   ) {
-    this.formatBsonId(filter);
-    await this.preHooks(
+    await this.preUpdateHook(
       MongoHookMethod.findOneAndUpdate,
       filter,
       update,
@@ -509,7 +536,7 @@ export class Model<T> extends OriginalCollection<T> {
     } else {
       newUpdate = update;
     }
-    const res = await this.updateOne(filter, newUpdate, options);
+    const res = await this.#collection.updateOne(filter, newUpdate, options);
 
     if (options?.new) {
       if (res.matchedCount > 0) {
@@ -520,10 +547,15 @@ export class Model<T> extends OriginalCollection<T> {
         return null;
       }
     }
+    await this.afterFindOneAndUpdate(res);
     return res;
   }
 
-  private async preUpdate(
+  /**
+   * pre upate hook, will format the update filter
+   */
+  private async preUpdateHook(
+    hook: MongoHookMethod,
     filter: Document,
     doc: Document,
     options?: UpdateExOptions,
@@ -560,7 +592,14 @@ export class Model<T> extends OriginalCollection<T> {
         modifyTime: new Date(),
       };
     }
-    await this.preHooks(MongoHookMethod.update, filter, doc, options);
+    await this.preHooks(hook, filter, doc, options);
+  }
+  private async preUpdate(
+    filter: Document,
+    doc: Document,
+    options?: UpdateExOptions,
+  ) {
+    await this.preUpdateHook(MongoHookMethod.update, filter, doc, options);
   }
 
   private async afterUpdate(
@@ -577,8 +616,19 @@ export class Model<T> extends OriginalCollection<T> {
     options?: UpdateExOptions,
   ) {
     await this.preUpdate(filter, doc, options);
-    const res = await super.updateMany(filter, doc, options);
+    const res = await this.#collection.updateMany(filter, doc, options);
     await this.afterUpdate(filter, doc, options);
+    return res;
+  }
+
+  async updateOne(
+    filter: Filter<T>,
+    update: UpdateFilter<T>,
+    options?: UpdateExOptions,
+  ) {
+    await this.preUpdate(filter, update, options);
+    const res = await this.#collection.updateOne(filter, update, options);
+    await this.afterUpdate(filter, update, options);
     return res;
   }
 
@@ -603,7 +653,7 @@ export class Model<T> extends OriginalCollection<T> {
     options?: DeleteOptions,
   ): Promise<number> {
     await this.preDelete(filter, options);
-    const res = await super.deleteMany(filter, options);
+    const res = await this.#collection.deleteMany(filter, options);
     await this.afterDelete(filter, options, res);
     return res;
   }
@@ -619,7 +669,7 @@ export class Model<T> extends OriginalCollection<T> {
 
   findOneAndDelete = this.deleteOne;
 
-  deleteById(id: string) {
+  deleteById(id: string | Bson.ObjectId) {
     const filter = {
       _id: transStringToMongoId(id),
     };
@@ -627,6 +677,17 @@ export class Model<T> extends OriginalCollection<T> {
   }
 
   findByIdAndDelete = this.deleteById;
+
+  distinct(key: string, query?: Filter<T>, options?: DistinctOptions) {
+    return this.#collection.distinct(key, query, options);
+  }
+
+  aggregate<U = T>(
+    pipeline: AggregatePipeline<U>[],
+    options?: AggregateOptions,
+  ) {
+    return this.#collection.aggregate(pipeline, options);
+  }
 
   async syncIndexes() {
     if (!this.#schema) {
@@ -637,6 +698,22 @@ export class Model<T> extends OriginalCollection<T> {
     });
     await this.initModel();
     return true;
+  }
+
+  dropIndexes(options: DropIndexOptions) {
+    return this.#collection.dropIndexes(options);
+  }
+
+  drop() {
+    return this.#collection.drop();
+  }
+
+  listIndexes() {
+    return this.#collection.listIndexes();
+  }
+
+  createIndexes(options: CreateIndexOptions) {
+    return this.#collection.createIndexes(options);
   }
 
   async initModel() {
@@ -666,7 +743,7 @@ export class Model<T> extends OriginalCollection<T> {
     if (indexes.length === 0) {
       return;
     }
-    await this.createIndexes({
+    await this.#collection.createIndexes({
       indexes,
     });
   }

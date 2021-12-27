@@ -1,5 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
+import { Bson } from "../deps.ts";
 import {
+  Constructor,
   Hooks,
   MongoHookCallback,
   MongoHookMethod,
@@ -10,7 +12,6 @@ import {
   TargetInstance,
   VirtualTypeOptions,
 } from "./types.ts";
-import { Bson } from "../deps.ts";
 import { getInstance } from "./utils/tools.ts";
 const metadataCache = new Map();
 
@@ -32,90 +33,6 @@ export function transferPopulateSelect(
 }
 
 export class Schema {
-  static preHooks: Hooks = new Map();
-  static postHooks: Hooks = new Map();
-
-  static populateMap: Map<string, RealPopulateSelect> = new Map();
-  static populateParams: Map<string, VirtualTypeOptions> = new Map();
-
-  static pre(method: MongoHookMethod, callback: MongoHookCallback) {
-    return this.hook(this.preHooks, method, callback);
-  }
-  static post(method: MongoHookMethod, callback: MongoHookCallback) {
-    return this.hook(this.postHooks, method, callback);
-  }
-
-  static clearHooks() {
-    this.preHooks.clear();
-    this.postHooks.clear();
-  }
-
-  static hook(
-    hooks: Hooks,
-    method: MongoHookMethod,
-    callback: MongoHookCallback,
-  ) {
-    let arr = hooks.get(method);
-    if (!arr) {
-      arr = [];
-      hooks.set(method, arr);
-    }
-    arr.push(callback.bind(this));
-    return arr;
-  }
-
-  /** Specifies paths which should be populated with other documents. */
-  static populate(
-    path: string,
-    select?: PopulateSelect,
-  ) {
-    const _select = transferPopulateSelect(select);
-    if (_select) {
-      this.populateMap.set(path, _select);
-    }
-    return this;
-  }
-
-  static getMeta() {
-    const map = getSchemaMetadata(this);
-    const baseMap = getSchemaMetadata(Schema);
-    return {
-      ...baseMap,
-      ...map,
-    };
-  }
-
-  static getPreHookByMethod(
-    method: MongoHookMethod,
-  ): MongoHookCallback[] | undefined {
-    return this.preHooks.get(method);
-  }
-
-  static getPostHookByMethod(
-    method: MongoHookMethod,
-  ): MongoHookCallback[] | undefined {
-    return this.postHooks.get(method);
-  }
-
-  static virtual(name: string, options: VirtualTypeOptions) {
-    this.populateParams.set(name, options);
-    return this;
-  }
-
-  static getPopulateMap() {
-    if (this.populateMap.size === 0) {
-      return;
-    }
-    return this.populateMap;
-  }
-
-  static getPopulateParams() {
-    if (this.populateParams.size === 0) {
-      return;
-    }
-    return this.populateParams;
-  }
-
   @Prop({
     default: Date.now,
   })
@@ -130,7 +47,101 @@ export class Schema {
   id?: string; // default id
 }
 
-export type SchemaCls = typeof Schema;
+export class BaseSchema {
+  Cls: Constructor;
+  constructor(Cls: Constructor) {
+    this.Cls = Cls;
+  }
+
+  private preHooks: Hooks = new Map();
+  private postHooks: Hooks = new Map();
+
+  private populateMap: Map<string, RealPopulateSelect> = new Map();
+  private populateParams: Map<string, VirtualTypeOptions> = new Map();
+
+  pre(method: MongoHookMethod, callback: MongoHookCallback) {
+    return this.hook(this.preHooks, method, callback);
+  }
+  post(method: MongoHookMethod, callback: MongoHookCallback) {
+    return this.hook(this.postHooks, method, callback);
+  }
+
+  clearHooks() {
+    this.preHooks.clear();
+    this.postHooks.clear();
+  }
+
+  private hook(
+    hooks: Hooks,
+    method: MongoHookMethod,
+    callback: MongoHookCallback,
+  ) {
+    let arr = hooks.get(method);
+    if (!arr) {
+      arr = [];
+      hooks.set(method, arr);
+    }
+    arr.push(callback.bind(this));
+    return arr;
+  }
+
+  /** Specifies paths which should be populated with other documents. */
+  populate(
+    path: string,
+    select?: PopulateSelect,
+  ) {
+    const _select = transferPopulateSelect(select);
+    if (_select) {
+      this.populateMap.set(path, _select);
+    }
+    return this;
+  }
+
+  getMeta() {
+    const map = getSchemaMetadata(this.Cls);
+    const baseMap = getSchemaMetadata(Schema);
+    return {
+      ...baseMap,
+      ...map,
+    };
+  }
+
+  getPreHookByMethod(
+    method: MongoHookMethod,
+  ): MongoHookCallback[] | undefined {
+    return this.preHooks.get(method);
+  }
+
+  getPostHookByMethod(
+    method: MongoHookMethod,
+  ): MongoHookCallback[] | undefined {
+    return this.postHooks.get(method);
+  }
+
+  virtual(name: string, options: VirtualTypeOptions) {
+    this.populateParams.set(name, options);
+    return this;
+  }
+
+  unVirtual(name: string) {
+    this.populateParams.delete(name);
+    return this;
+  }
+
+  getPopulateMap() {
+    if (this.populateMap.size === 0) {
+      return;
+    }
+    return this.populateMap;
+  }
+
+  getPopulateParams() {
+    if (this.populateParams.size === 0) {
+      return;
+    }
+    return this.populateParams;
+  }
+}
 
 export function Prop(props?: SchemaType) {
   return function (target: TargetInstance, propertyKey: string) {

@@ -6,7 +6,6 @@ export * from "./src/utils/mod.ts";
 export * from "./src/types.ts";
 
 export * from "./src/schema.ts";
-export type { SchemaCls } from "./src/schema.ts";
 
 export * from "./src/factory.ts";
 
