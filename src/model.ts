@@ -27,6 +27,7 @@ import {
   transferPopulateSelect,
 } from "./schema.ts";
 import {
+  FindAndUpdateExOptions,
   FindExOptions,
   InsertExOptions,
   MongoHookMethod,
@@ -486,16 +487,7 @@ export class Model<T> {
   findByIdAndUpdate(
     id: string | Bson.ObjectId,
     update: UpdateFilter<T>,
-    options: UpdateExOptions,
-  ): Promise<T | undefined>;
-  findByIdAndUpdate(
-    id: string | Bson.ObjectId,
-    update: UpdateFilter<T>,
-  ): Promise<UpdateOneResult>;
-  findByIdAndUpdate(
-    id: string | Bson.ObjectId,
-    update: UpdateFilter<T>,
-    options?: UpdateExOptions,
+    options?: FindAndUpdateExOptions,
   ) {
     const filter = {
       _id: transStringToMongoId(id),
@@ -519,30 +511,18 @@ export class Model<T> {
   async findOneAndUpdate(
     filter: Filter<T>,
     update: UpdateFilter<T>,
-  ): Promise<UpdateOneResult>;
-  async findOneAndUpdate(
-    filter: Filter<T>,
-    update: UpdateFilter<T>,
-    options: UpdateExOptions,
-  ): Promise<T | undefined>;
-  async findOneAndUpdate(
-    filter: Filter<T>,
-    update: UpdateFilter<T>,
-    options?: UpdateExOptions,
+    options: FindAndUpdateExOptions = {},
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
-    if (options?.new) {
-      const updatedDoc = await this.#collection.findAndModify(filter, {
-        update,
-        new: true,
-      });
-      await this.afterFindOneAndUpdate(updatedDoc);
-      return updatedDoc;
-    } else {
-      const res = await this.#collection.updateOne(filter, update, options);
-      await this.afterFindOneAndUpdate(res);
-      return res;
-    }
+    const updatedDoc = await this.#collection.findAndModify(filter, {
+      update,
+      sort: options?.sort,
+      new: options?.new,
+      upsert: options?.upsert,
+      fields: options?.fields,
+    });
+    await this.afterFindOneAndUpdate(updatedDoc);
+    return updatedDoc;
   }
 
   /**

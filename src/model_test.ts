@@ -109,7 +109,6 @@ describe("collection", () => {
       ) {
         assertExists(filter._id, "只测试findByIdAndUpdate，这时条件里肯定有_id");
         assertEquals(doc, update);
-        assertEquals(_options!.new, true);
       },
     );
 

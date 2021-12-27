@@ -19,6 +19,7 @@ export type {
   Document,
   DropIndexOptions,
   Filter,
+  FindAndModifyOptions,
   FindOptions,
   IndexOptions,
   InsertDocument,

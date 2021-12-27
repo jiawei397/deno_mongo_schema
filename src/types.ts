@@ -3,6 +3,7 @@ import {
   Bson,
   Document,
   Filter,
+  FindAndModifyOptions,
   FindOptions,
   IndexOptions,
   InsertOptions,
@@ -23,8 +24,12 @@ export type FindExOptions = FindOptions & {
 
 export type InsertExOptions = InsertOptions & ExOptions;
 
+export interface FindAndUpdateExOptions extends FindAndModifyOptions {
+  /** @deprecated Please drop it soon */
+  useFindAndModify?: boolean;
+}
+
 export interface UpdateExOptions extends UpdateOptions {
-  new?: boolean;
   /** @deprecated Please drop it soon */
   useFindAndModify?: boolean;
 }
