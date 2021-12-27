@@ -12,6 +12,7 @@ export type {
   AggregatePipeline,
   BuildInfo,
   ConnectOptions,
+  CountOptions,
   CreateIndexOptions,
   DeleteOptions,
   DistinctOptions,

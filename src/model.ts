@@ -6,6 +6,7 @@ import {
   blue,
   Bson,
   Collection,
+  CountOptions,
   CreateIndexOptions,
   DeleteOptions,
   DistinctOptions,
@@ -714,6 +715,10 @@ export class Model<T> {
 
   createIndexes(options: CreateIndexOptions) {
     return this.#collection.createIndexes(options);
+  }
+
+  countDocuments(filter?: Filter<T>, options?: CountOptions) {
+    return this.#collection.countDocuments(filter, options);
   }
 
   async initModel() {
