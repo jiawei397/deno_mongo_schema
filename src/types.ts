@@ -9,6 +9,7 @@ import {
   InsertOptions,
   UpdateOptions,
 } from "../deps.ts";
+import { Model } from "./model.ts";
 
 export type PopulateSelect = string | boolean | Record<string, 0 | 1>;
 
@@ -45,9 +46,12 @@ export enum MongoHookMethod {
   findOneAndUpdate = "findOneAndUpdate",
 }
 
-export type MongoHookCallback = (...args: any[]) => void;
+export type MongoHookCallback<T = any> = (
+  this: Model<T>,
+  ...args: any[]
+) => void;
 
-export type Hooks = Map<MongoHookMethod, MongoHookCallback[]>;
+export type Hooks = Map<MongoHookMethod, MongoHookCallback<any>[]>;
 
 export interface SchemaType extends Partial<IndexOptions> {
   index?: boolean | "text";

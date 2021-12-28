@@ -81,7 +81,7 @@ export class BaseSchema {
       arr = [];
       hooks.set(method, arr);
     }
-    arr.push(callback.bind(this));
+    arr.push(callback);
     return arr;
   }
 

@@ -76,11 +76,13 @@ describe("collection", () => {
 
     const inserted = "MongoHookMethod.find";
     UserSchema.post(MongoHookMethod.findOne, function (doc: any) {
+      assert(this === userModel, "this is userModel");
       assertNotEquals(doc, null, "hook findOne, doc must not be null");
       doc["inserted"] = inserted;
     });
 
     UserSchema.post(MongoHookMethod.findMany, function () {
+      assert(this === userModel, "this is userModel");
       assert(false, "this will not be in");
     });
 
@@ -107,6 +109,7 @@ describe("collection", () => {
         doc: Document,
         _options?: UpdateExOptions,
       ) {
+        assert(this === userModel, "this is userModel");
         assertExists(filter._id, "只测试findByIdAndUpdate，这时条件里肯定有_id");
         assertEquals(doc, update);
       },
@@ -114,6 +117,7 @@ describe("collection", () => {
 
     const insertedAddr = "haha";
     UserSchema.post(MongoHookMethod.findOneAndUpdate, function (doc) {
+      assert(this === userModel, "this is userModel");
       assertNotEquals(
         doc,
         null,
@@ -141,6 +145,7 @@ describe("collection", () => {
     });
 
     UserSchema.post(MongoHookMethod.findMany, function (docs) {
+      assert(this === userModel, "this is userModel");
       assert(Array.isArray(docs), "docs must be array");
       docs.forEach((doc) => {
         doc["inserted"] = manyInserted;

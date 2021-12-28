@@ -34,7 +34,6 @@ import {
   PopulateSelect,
   SchemaType,
   UpdateExOptions,
-  UpdateOneResult,
   VirtualTypeOptions,
 } from "./types.ts";
 import { transStringToMongoId } from "./utils/tools.ts";
