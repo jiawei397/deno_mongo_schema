@@ -425,7 +425,7 @@ describe("populates", () => {
       isTransformLocalFieldToObjectID: true,
       count: true,
       match: {
-        age: 22,
+        age: user2.age,
       },
     });
     const arr = await roleModel.findMany({}, {

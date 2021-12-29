@@ -159,7 +159,7 @@ export class Model<T> {
       if (
         // transform id to mongoid or monogoid to string
         value.isTransformLocalFieldToObjectID ||
-        value.isTransformObjectIDToLocalField
+        value.isTransformLocalFieldToString
       ) {
         if (value.isTransformLocalFieldToObjectID) {
           addFields[value.localField] = {
