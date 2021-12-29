@@ -174,29 +174,23 @@ export class Model<T> {
           $addFields: addFields,
         });
       }
-      let lookup;
-      if (value.count) {
-        lookup = {
-          from,
-          as: key,
-          let: { localField: "$" + value.localField },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: ["$" + value.foreignField, "$$localField"] },
-                ...value.match,
-              },
+      const lookup: any = {
+        from,
+        as: key,
+        let: { localField: "$" + value.localField },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$" + value.foreignField, "$$localField"] },
+              ...value.match,
             },
-            { $group: { _id: null, "count": { "$sum": 1 } } },
-          ],
-        };
-      } else {
-        lookup = {
-          from,
-          localField: value.localField,
-          foreignField: value.foreignField,
-          as: key,
-        };
+          },
+        ],
+      };
+      if (value.count) {
+        lookup.pipeline.push(
+          { $group: { _id: null, "count": { "$sum": 1 } } },
+        );
       }
       paramsArray.push({
         $lookup: lookup,
