@@ -99,17 +99,18 @@ export interface VirtualTypeOptions {
    */
   justOne?: boolean;
 
-  /** If you set this to `true`, Mongoose will call any custom getters you defined on this virtual. */
-  getters?: boolean;
+  // /** If you set this to `true`, Mongoose will call any custom getters you defined on this virtual. */
+  // getters?: boolean;
 
   /**
    * If you set this to `true`, `populate()` will set this virtual to the number of populated
    * documents, as opposed to the documents themselves, using `Query#countDocuments()`.
+   * And it will ignore the `justOne` option.
    */
   count?: boolean;
 
   /** Add an extra match condition to `populate()`. */
-  match?: Filter<any> | Function;
+  match?: Filter<any>;
 
   /** Add a default `limit` to the `populate()` query. */
   limit?: number;
@@ -124,7 +125,7 @@ export interface VirtualTypeOptions {
    * document to `populate()`. For example, `.find().populate({ path: 'test', perDocumentLimit: 2 })`
    * will execute 2 additional queries if `.find()` returns 2 documents.
    */
-  perDocumentLimit?: number;
+  // perDocumentLimit?: number;
 
   /** Additional options like `limit` and `lean`. */
   // options?: QueryOptions;

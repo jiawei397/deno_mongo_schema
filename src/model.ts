@@ -157,6 +157,7 @@ export class Model<T> {
         ? getFormattedModelName(value.ref)
         : getFormattedModelName(value.ref.name);
       if (
+        // transform id to mongoid or monogoid to string
         value.isTransformLocalFieldToObjectID ||
         value.isTransformObjectIDToLocalField
       ) {
@@ -173,13 +174,32 @@ export class Model<T> {
           $addFields: addFields,
         });
       }
-      paramsArray.push({
-        $lookup: {
+      let lookup;
+      if (value.count) {
+        lookup = {
+          from,
+          as: key,
+          let: { localField: "$" + value.localField },
+          pipeline: [
+            {
+              $match: {
+                $expr: { $eq: ["$" + value.foreignField, "$$localField"] },
+                ...value.match,
+              },
+            },
+            { $group: { _id: null, "count": { "$sum": 1 } } },
+          ],
+        };
+      } else {
+        lookup = {
           from,
           localField: value.localField,
           foreignField: value.foreignField,
           as: key,
-        },
+        };
+      }
+      paramsArray.push({
+        $lookup: lookup,
       });
     }
 
@@ -265,17 +285,24 @@ export class Model<T> {
       const arr = doc[key] as any[];
       const pickMap = map.get(key);
       if (arr?.length === 0) {
-        if (value.justOne) {
+        if (value.count) {
+          doc[key] = 0;
+        } else if (value.justOne) {
           doc[key] = null;
         }
       } else {
         for (let i = 0; i < arr.length; i++) {
           const item = arr[i];
-          if (value.justOne) {
-            doc[key] = this.pickVirtual(item, pickMap!, remainOriginId);
+          if (value.count) {
+            doc[key] = item.count;
             break;
           } else {
-            arr[i] = this.pickVirtual(item, pickMap!, remainOriginId);
+            if (value.justOne) {
+              doc[key] = this.pickVirtual(item, pickMap!, remainOriginId);
+              break;
+            } else {
+              arr[i] = this.pickVirtual(item, pickMap!, remainOriginId);
+            }
           }
         }
       }

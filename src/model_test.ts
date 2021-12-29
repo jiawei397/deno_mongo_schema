@@ -28,6 +28,7 @@ class Role extends Schema {
   name!: string;
 
   user?: User;
+  userCount?: number;
 }
 
 const RoleSchema = SchemaFactory.createForClass(Role);
@@ -391,6 +392,52 @@ describe("populates", () => {
     assertEquals(arr.length, 2);
     assert(!arr[0].user);
     assert(!arr[1].user);
+  });
+
+  it("find populate count", async () => {
+    RoleSchema.virtual("userCount", {
+      ref: User,
+      localField: "userId",
+      foreignField: "_id",
+      justOne: true,
+      isTransformLocalFieldToObjectID: true,
+      count: true,
+    });
+    const arr = await roleModel.findMany({}, {
+      populates: {
+        user: false,
+        userCount: true,
+      },
+    });
+    assertEquals(arr.length, 2);
+    assertEquals(arr[0].userCount, 1);
+    assertEquals(arr[0].user, undefined);
+
+    RoleSchema.unVirtual("userCount");
+  });
+
+  it("find populate count with match", async () => {
+    RoleSchema.virtual("userCount", {
+      ref: User,
+      localField: "userId",
+      foreignField: "_id",
+      justOne: true,
+      isTransformLocalFieldToObjectID: true,
+      count: true,
+      match: {
+        age: 22,
+      },
+    });
+    const arr = await roleModel.findMany({}, {
+      populates: {
+        userCount: true,
+      },
+    });
+    assertEquals(arr.length, 2);
+    assertEquals(arr[0].userCount, 0);
+    assertEquals(arr[1].userCount, 1);
+
+    RoleSchema.unVirtual("userCount");
   });
 });
 
