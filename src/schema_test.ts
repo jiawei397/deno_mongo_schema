@@ -36,6 +36,39 @@ describe("metadata", () => {
       index: true,
     });
   });
+
+  it("extends", () => {
+    @SchemaDecorator()
+    class A {
+      @Prop({
+        index: true,
+      })
+      name: string;
+    }
+
+    @SchemaDecorator()
+    class B extends A {
+      @Prop({
+        required: true,
+      })
+      age: string;
+    }
+    const schema = SchemaFactory.createForClass(A);
+    assertEquals(schema.getMeta(), {
+      name: {
+        index: true,
+      },
+    });
+    const schema2 = SchemaFactory.createForClass(B);
+    assertEquals(schema2.getMeta(), {
+      name: {
+        index: true,
+      },
+      age: {
+        required: true,
+      },
+    });
+  });
 });
 
 describe("virtual", () => {

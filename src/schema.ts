@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Bson } from "../deps.ts";
+import { Bson, Reflect } from "../deps.ts";
 import {
   Constructor,
   Hooks,
@@ -13,7 +13,7 @@ import {
   VirtualTypeOptions,
 } from "./types.ts";
 import { getInstance } from "./utils/tools.ts";
-const metadataCache = new Map();
+const PROP_META_KEY = Symbol("design:prop");
 
 export function transferPopulateSelect(
   select?: PopulateSelect,
@@ -98,12 +98,7 @@ export class BaseSchema {
   }
 
   getMeta() {
-    const map = getSchemaMetadata(this.Cls);
-    const baseMap = getSchemaMetadata(Schema);
-    return {
-      ...baseMap,
-      ...map,
-    };
+    return getSchemaMetadata(this.Cls);
   }
 
   getPreHookByMethod(
@@ -145,7 +140,7 @@ export class BaseSchema {
 
 export function Prop(props?: SchemaType) {
   return function (target: TargetInstance, propertyKey: string) {
-    addSchemaMetadata(target.constructor, propertyKey, props);
+    addSchemaMetadata(target, propertyKey, props);
     return target;
   };
 }
@@ -159,26 +154,33 @@ export function getFormattedModelName(name: string) {
 }
 
 export function addSchemaMetadata(
-  target: Target,
+  target: TargetInstance,
   propertyKey: string,
   props: any = {},
 ) {
-  const instance = getInstance(target);
-  let map = metadataCache.get(instance);
-  if (!map) {
-    map = {};
-    metadataCache.set(instance, map);
-  }
-  map[propertyKey] = props;
+  Reflect.defineMetadata(PROP_META_KEY, props, target, propertyKey);
 }
+
+const schemaPropsCaches = new Map();
 
 export function getSchemaMetadata(
   target: Target,
   propertyKey?: string,
 ) {
-  const map = metadataCache.get(getInstance(target));
+  const instance = getInstance(target);
   if (propertyKey) {
-    return map[propertyKey];
+    return Reflect.getMetadata(PROP_META_KEY, instance, propertyKey);
+  }
+  let map: Record<string, any> = schemaPropsCaches.get(target);
+  if (!map) {
+    map = {};
+    Object.keys(instance).forEach((key) => {
+      const meta = Reflect.getMetadata(PROP_META_KEY, instance, key);
+      if (meta) {
+        map[key] = meta;
+      }
+    });
+    schemaPropsCaches.set(target, map);
   }
   return map;
 }
