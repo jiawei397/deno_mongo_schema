@@ -477,7 +477,7 @@ export class Model<T> {
 
   /** @deprecated please use insertOne instead */
   async save(doc: InsertDocument<T>, options?: InsertExOptions) {
-    const id = await this.#collection.insertOne(doc, options);
+    const id = await this.insertOne(doc, options);
     const res = {
       ...doc,
       _id: id,
