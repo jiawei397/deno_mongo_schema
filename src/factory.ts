@@ -12,11 +12,11 @@ import { Model } from "./model.ts";
 import { BaseSchema, getFormattedModelName } from "./schema.ts";
 import { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
+import { Cache } from "./utils/cache.ts";
 
 export class MongoFactory {
   static #client: MongoClient | undefined;
   static #initPromise: Promise<any> | undefined;
-  static #modelCaches = new Map<string, Promise<Model<any>>>();
 
   static get client() {
     if (!this.#client) {
@@ -54,9 +54,11 @@ export class MongoFactory {
     return this.getModelByName(modelName);
   }
 
-  static async #getModelByName<T>(
+  @Cache(-1)
+  private static async getModelByName<T>(
     name: string,
   ): Promise<Model<T>> {
+    console.log("--------one---");
     assert(this.#initPromise, "must be inited");
     await this.#initPromise;
     const model = await this.client.getCollection<T>(name);
@@ -83,16 +85,6 @@ export class MongoFactory {
     }
     console.log(`${yellow("Schema")} [${green(name)}] ${blue("init ok")}`);
     return model;
-  }
-
-  private static getModelByName(name: string) {
-    let promise = this.#modelCaches.get(name);
-    if (promise) {
-      return promise;
-    }
-    promise = this.#getModelByName(name);
-    this.#modelCaches.set(name, promise);
-    return promise;
   }
 }
 
