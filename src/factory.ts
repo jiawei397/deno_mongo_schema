@@ -58,7 +58,6 @@ export class MongoFactory {
   private static async getModelByName<T>(
     name: string,
   ): Promise<Model<T>> {
-    console.log("--------one---");
     assert(this.#initPromise, "must be inited");
     await this.#initPromise;
     const model = await this.client.getCollection<T>(name);
