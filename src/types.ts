@@ -28,6 +28,7 @@ export type InsertExOptions = InsertOptions & ExOptions;
 export interface FindAndUpdateExOptions extends FindAndModifyOptions {
   /** @deprecated Please drop it soon */
   useFindAndModify?: boolean;
+  remainOriginId?: boolean;
 }
 
 export interface UpdateExOptions extends UpdateOptions {

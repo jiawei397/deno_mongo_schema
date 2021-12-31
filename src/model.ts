@@ -523,8 +523,12 @@ export class Model<T> {
 
   private async afterFindOneAndUpdate(
     doc?: Document,
+    options?: FindAndUpdateExOptions,
   ) {
     await this.postHooks(MongoHookMethod.findOneAndUpdate, doc);
+    if (options?.new) {
+      this.transferId(doc, options.remainOriginId);
+    }
   }
 
   findByIdAndUpdate(
@@ -564,7 +568,7 @@ export class Model<T> {
       upsert: options?.upsert,
       fields: options?.fields,
     });
-    await this.afterFindOneAndUpdate(updatedDoc);
+    await this.afterFindOneAndUpdate(updatedDoc, options);
     return updatedDoc;
   }
 

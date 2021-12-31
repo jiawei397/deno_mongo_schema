@@ -124,19 +124,34 @@ describe("collection", () => {
         null,
         "hook findOneAndUpdate, doc must not be null",
       );
+
       doc.addr = insertedAddr;
     });
 
-    const res: any = await userModel.findByIdAndUpdate(id, update, options);
-    assert(res);
-    assertEquals(res.name, update.$set.name);
-    assertEquals(res.age, update.$set.age);
-    assertEquals(res.sex, undefined);
-    assertEquals(
-      res.addr,
-      insertedAddr,
-      "hook findOneAndUpdate will inster name",
-    );
+    {
+      const res = await userModel.findByIdAndUpdate(id, update, options);
+      assert(res);
+      assert(!res._id, "res._id is dropped");
+      assert(res.id, "res.id is not null");
+      assertEquals(res.name, update.$set.name);
+      assertEquals(res.age, update.$set.age);
+      assertEquals((res as any).sex, undefined);
+      assertEquals(
+        (res as any).addr,
+        insertedAddr,
+        "hook findOneAndUpdate will inster name",
+      );
+    }
+
+    {
+      const res = await userModel.findByIdAndUpdate(id, update, {
+        new: true,
+        remainOriginId: true,
+      });
+      assert(res);
+      assert(res._id, "res._id should be remained");
+      assert(res.id, "res.id cannot be null");
+    }
   });
 
   it("find many", async () => {
