@@ -441,6 +441,46 @@ describe("populates", () => {
   });
 });
 
+describe("Prop", () => {
+  it("default", async () => {
+    @SchemaDecorator()
+    class Blog extends Schema {
+      @Prop()
+      title!: string;
+
+      @Prop({
+        default: false,
+      })
+      deleted?: boolean;
+
+      @Prop({
+        default: () => "function",
+      })
+      func?: string;
+
+      @Prop({
+        default: Date,
+      })
+      date?: Date;
+    }
+    const blogModel = await MongoFactory.getModel(Blog);
+
+    const id = await blogModel.insertOne({
+      title: "test",
+    });
+    assert(id);
+    const find = await blogModel.findById(id);
+    assert(find);
+    assertEquals(find.title, "test");
+    assertEquals(find.deleted, false);
+    assertEquals(find.func, "function");
+    assert(find.date instanceof Date);
+
+    // clear
+    await blogModel.drop();
+  });
+});
+
 describe("close", () => {
   it("drop collection", async () => {
     await userModel.drop();
