@@ -411,7 +411,7 @@ export class Model<T> {
     const data = this.schema.getMeta();
     for (const key in data) {
       const val: SchemaType = data[key];
-      if (!val) {
+      if (!val || Object.keys(val).length === 0) {
         continue;
       }
       docs.forEach((doc) => {
@@ -425,7 +425,7 @@ export class Model<T> {
         }
         if (doc[key] === undefined && val.default !== undefined) {
           if (typeof val.default === "function") {
-            if (val.default === Date.now) { // means to get a new Date
+            if (val.default === Date.now || val.default === Date) { // means to get a new Date
               doc[key] = new Date();
             } else {
               doc[key] = val.default();
