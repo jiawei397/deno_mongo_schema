@@ -471,17 +471,32 @@ describe("Prop", () => {
     }
     const blogModel = await MongoFactory.getModel(Blog);
 
-    const id = await blogModel.insertOne({
-      title: "test",
-    });
-    assert(id);
-    const find = await blogModel.findById(id);
-    assert(find);
-    assertEquals(find.title, "test");
-    assertEquals(find.deleted, false);
-    assertEquals(find.func, "function");
-    assert(find.date instanceof Date);
-    assertEquals(find.name, "hello");
+    {
+      const id = await blogModel.insertOne({
+        title: "test",
+      });
+      assert(id);
+      const find = await blogModel.findById(id);
+      assert(find);
+      assertEquals(find.title, "test");
+      assertEquals(find.deleted, false);
+      assertEquals(find.func, "function");
+      assert(find.date instanceof Date);
+      assertEquals(find.name, "hello");
+    }
+
+    { // save
+      const data = await blogModel.save({
+        title: "test",
+      });
+      assert(data);
+      assert(data.id);
+      assertEquals(data.title, "test");
+      assertEquals(data.deleted, false);
+      assertEquals(data.func, "function");
+      assert(data.date instanceof Date);
+      assertEquals(data.name, "hello");
+    }
 
     // clear
     await blogModel.drop();

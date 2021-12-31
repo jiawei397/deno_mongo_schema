@@ -407,8 +407,24 @@ export class Model<T> {
     this.checkMetaBeforeInsert(docs);
   }
 
+  private getFormattedDefault(defaultData: any) {
+    if (defaultData !== undefined) {
+      if (typeof defaultData === "function") {
+        if (defaultData === Date.now || defaultData === Date) { // means to get a new Date
+          return new Date();
+        } else {
+          return defaultData();
+        }
+      }
+    }
+    return defaultData;
+  }
+
   private checkMetaBeforeInsert(docs: Document[]) {
     const data = this.schema.getMeta();
+    if (!data) {
+      return;
+    }
     for (const key in data) {
       const val: SchemaType = data[key];
       if (!val || Object.keys(val).length === 0) {
@@ -424,15 +440,7 @@ export class Model<T> {
           }
         }
         if (doc[key] === undefined && val.default !== undefined) {
-          if (typeof val.default === "function") {
-            if (val.default === Date.now || val.default === Date) { // means to get a new Date
-              doc[key] = new Date();
-            } else {
-              doc[key] = val.default();
-            }
-          } else {
-            doc[key] = val.default;
-          }
+          doc[key] = this.getFormattedDefault(val.default);
         }
         const required = val.required;
         if (required) {
@@ -482,7 +490,22 @@ export class Model<T> {
       ...doc,
       _id: id,
     };
-    return this.transferId(res, options?.remainOriginId);
+    this.transferId(res, options?.remainOriginId);
+
+    const meta = this.schema.getMeta();
+    if (meta) {
+      const newDoc: any = res;
+      for (const key in meta) {
+        const val: SchemaType = meta[key];
+        if (!val) {
+          continue;
+        }
+        if (newDoc[key] === undefined && val.default !== undefined) {
+          newDoc[key] = this.getFormattedDefault(newDoc);
+        }
+      }
+    }
+    return res;
   }
 
   private async preFindOneAndUpdate(
