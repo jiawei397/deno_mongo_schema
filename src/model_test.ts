@@ -443,8 +443,14 @@ describe("populates", () => {
 
 describe("Prop", () => {
   it("default", async () => {
+    class Base extends Schema {
+      @Prop({
+        default: "hello",
+      })
+      name?: string;
+    }
     @SchemaDecorator()
-    class Blog extends Schema {
+    class Blog extends Base {
       @Prop()
       title!: string;
 
@@ -475,6 +481,7 @@ describe("Prop", () => {
     assertEquals(find.deleted, false);
     assertEquals(find.func, "function");
     assert(find.date instanceof Date);
+    assertEquals(find.name, "hello");
 
     // clear
     await blogModel.drop();
