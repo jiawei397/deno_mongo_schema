@@ -205,5 +205,6 @@ UserSchema.virtual("role", {
 ## TODO
 
 - [x] Modify schema as a decorator
+- [x] Unit
 - [ ] Configurable whether to convert _id
 - [ ] Configurable the createTime and modifyTime
