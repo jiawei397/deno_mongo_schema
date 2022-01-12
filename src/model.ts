@@ -245,7 +245,7 @@ export class Model<T> {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
     await this.afterFind(doc, filter, options);
-    return doc as T;
+    return doc as T | undefined;
   }
 
   async findMany(
