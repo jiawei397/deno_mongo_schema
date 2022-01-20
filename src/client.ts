@@ -85,10 +85,18 @@ export class MongoClient {
   // below is my extend functions
   initDB(db: string): Promise<Database> {
     if (!this.#initedDBPromise) {
-      this.#initedDBPromise = this.connect(db).then(() => {
-        console.info(`connected mongo：${yellow(db)}`);
-        return this.database();
-      });
+      this.#initedDBPromise = this.connect(db)
+        .then(() => {
+          return parse(db.split("?")[0]);
+        })
+        .then((options) => {
+          console.info(
+            `connected mongo：${yellow(db)} and connected db：${
+              yellow(options.db)
+            }`,
+          );
+          return this.database(options.db);
+        });
     }
     return this.#initedDBPromise;
   }
