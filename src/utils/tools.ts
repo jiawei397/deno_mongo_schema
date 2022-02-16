@@ -15,11 +15,13 @@ export function createMongoId() {
   return new Bson.ObjectId();
 }
 
-export function transStringToMongoId(id: string | Bson.ObjectId) {
-  if (typeof id === "string") {
-    return new Bson.ObjectId(id);
+export function transToMongoId(
+  id: string | number | Uint8Array | Bson.ObjectId,
+) {
+  if (id && id instanceof Bson.ObjectId) {
+    return id;
   }
-  return id;
+  return new Bson.ObjectId(id);
 }
 
 export function getInstance(cls: Target) {

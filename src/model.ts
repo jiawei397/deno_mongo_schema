@@ -36,7 +36,7 @@ import {
   UpdateExOptions,
   VirtualTypeOptions,
 } from "./types.ts";
-import { transStringToMongoId } from "./utils/tools.ts";
+import { transToMongoId } from "./utils/tools.ts";
 
 export class Model<T> {
   #collection: Collection<T>;
@@ -366,10 +366,10 @@ export class Model<T> {
       if (filter?._id) {
         const id = filter._id;
         if (typeof id === "string") {
-          filter._id = transStringToMongoId(id);
+          filter._id = transToMongoId(id);
         } else if (Array.isArray(id.$in)) {
           id.$in = id.$in.map((_id: any) => {
-            return transStringToMongoId(_id);
+            return transToMongoId(_id);
           });
         }
       }
@@ -398,6 +398,11 @@ export class Model<T> {
   }
 
   private async preInsert(docs: Document[]) {
+    docs.forEach((doc) => {
+      if (doc._id) {
+        doc._id = transToMongoId(doc._id);
+      }
+    });
     if (!this.schema) {
       return;
     }
@@ -537,7 +542,7 @@ export class Model<T> {
     options?: FindAndUpdateExOptions,
   ) {
     const filter = {
-      _id: transStringToMongoId(id),
+      _id: transToMongoId(id),
     };
     if (options) {
       return this.findOneAndUpdate(filter, update, options);
@@ -550,7 +555,7 @@ export class Model<T> {
     options?: FindExOptions,
   ) {
     const filter = {
-      _id: transStringToMongoId(id),
+      _id: transToMongoId(id),
     };
     return this.findOne(filter, options);
   }
@@ -702,7 +707,7 @@ export class Model<T> {
 
   deleteById(id: string | Bson.ObjectId) {
     const filter = {
-      _id: transStringToMongoId(id),
+      _id: transToMongoId(id),
     };
     return this.deleteOne(filter);
   }
