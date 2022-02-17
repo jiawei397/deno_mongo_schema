@@ -482,9 +482,10 @@ export class Model<T> {
     docs: InsertDocument<T>[],
     options?: InsertExOptions,
   ) {
-    await this.preInsert(docs);
-    const res = await this.#collection.insertMany(docs, options);
-    await this.afterInsert(docs);
+    const clonedDocs = docs.map((doc) => ({ ...doc }));
+    await this.preInsert(clonedDocs);
+    const res = await this.#collection.insertMany(clonedDocs, options);
+    await this.afterInsert(clonedDocs);
     return res;
   }
 
