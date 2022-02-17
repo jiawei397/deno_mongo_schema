@@ -39,6 +39,7 @@ RoleSchema.virtual("user", {
   isTransformLocalFieldToObjectID: true,
 });
 
+RoleSchema.populate("user");
 // Role.populate("user", {
 //   // _id: 0,
 //   group: 1,
@@ -77,16 +78,16 @@ async function main() {
       },
       // skip: 1,
       // limit: 1,
-      populates: {
-        // user: {
-        //   // _id: 0,
-        //   group: 1,
-        //   title: 1,
-        // },
-        // user: "group",
-        user: true,
-        // user: "-_id -title",
-      },
+      // populates: {
+      //   // user: {
+      //   //   // _id: 0,
+      //   //   group: 1,
+      //   //   title: 1,
+      //   // },
+      //   user: "group",
+      //   // user: true,
+      //   // user: "-_id -title",
+      // },
     }),
   );
 }

@@ -23,7 +23,7 @@ export function transferPopulateSelect(
     _select = {};
     select.split(" ").forEach((item) => {
       if (item.startsWith("-")) {
-        _select[item.substr(1)] = 0;
+        _select[item.substring(1)] = 0;
       } else {
         _select[item] = 1;
       }
@@ -94,6 +94,11 @@ export class BaseSchema {
     if (_select) {
       this.populateMap.set(path, _select);
     }
+    return this;
+  }
+
+  unpopulate(path: string) {
+    this.populateMap.delete(path);
     return this;
   }
 

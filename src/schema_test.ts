@@ -113,14 +113,15 @@ describe("virtual", () => {
     assert(roleId instanceof Bson.ObjectId);
 
     {
-      RoleSchema.virtual("user", {
+      const UserVirtual = {
         ref: userSchemaName,
         localField: "userId",
         foreignField: "_id",
         justOne: true,
         isTransformLocalFieldToObjectID: true,
-      });
+      };
 
+      RoleSchema.virtual("user", UserVirtual);
       const result = await roleModel.findById(roleId, {
         projection: {
           name: 1,
@@ -134,21 +135,52 @@ describe("virtual", () => {
       assertEquals(result.name, "normal");
       assertEquals(result.userId, userId);
       assert(result.user);
+      assert(!Array.isArray(result.user));
       assertEquals(result.user.group, userData.group);
       assertEquals(result.user.title, userData.title);
 
       RoleSchema.unVirtual("user");
     }
 
+    { // test schema populate
+      const UserVirtual = {
+        ref: userSchemaName,
+        localField: "userId",
+        foreignField: "_id",
+        justOne: true,
+        isTransformLocalFieldToObjectID: true,
+      };
+
+      RoleSchema.virtual("user", UserVirtual);
+      RoleSchema.populate("user");
+
+      const result = await roleModel.findById(roleId, {
+        projection: {
+          name: 1,
+          userId: 1,
+        },
+      });
+      assert(result);
+      assertEquals(result.name, "normal");
+      assertEquals(result.userId, userId);
+      assert(result.user);
+      assert(!Array.isArray(result.user));
+      assertEquals(result.user.group, userData.group);
+      assertEquals(result.user.title, userData.title);
+
+      RoleSchema.unVirtual("user");
+      RoleSchema.unpopulate("user");
+    }
+
     { // test ref not exists
-      RoleSchema.virtual("user", {
+      const UserVirtual = {
         ref: User,
         localField: "userId",
         foreignField: "_id",
         justOne: true,
         isTransformLocalFieldToObjectID: true,
-      });
-
+      };
+      RoleSchema.virtual("user", UserVirtual);
       const result = await roleModel.findById(roleId, {
         populates: {
           user: true,

@@ -273,7 +273,11 @@ export class Model<T> {
       return;
     }
     for (const [key, value] of params) {
-      if (!map.has(key) || !doc[key] || !populates || !populates[key]) {
+      if (!map.has(key) || !doc[key]) {
+        continue;
+      }
+      if (populates && !populates[key]) {
+        delete doc[key];
         continue;
       }
       const arr = doc[key] as any[];
