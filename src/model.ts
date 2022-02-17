@@ -505,15 +505,13 @@ export class Model<T> {
     const meta = this.schema.getMeta();
     if (meta) {
       const newDoc: any = res;
-      for (const key in meta) {
+      Object.keys(meta).forEach((key) => {
         const val: SchemaType = meta[key];
-        if (!val) {
-          continue;
+        if (!val || newDoc[key] !== undefined || val.default === undefined) {
+          return;
         }
-        if (newDoc[key] === undefined && val.default !== undefined) {
-          newDoc[key] = this.getFormattedDefault(newDoc);
-        }
-      }
+        newDoc[key] = this.getFormattedDefault(val.default);
+      });
     }
     return res;
   }
