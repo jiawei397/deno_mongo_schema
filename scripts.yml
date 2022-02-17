@@ -8,7 +8,7 @@ scripts:
       - net
       - write
       - read
-    # unstable: true
+    unstable: true
     # tsconfig: "tsconfig.json"
     watch: true
   cache: 
