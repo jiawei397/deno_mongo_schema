@@ -756,6 +756,7 @@ export class Model<T> {
   }
 
   countDocuments(filter?: Filter<T>, options?: CountOptions) {
+    this.formatBsonId(filter);
     return this.#collection.countDocuments(filter, options);
   }
 
