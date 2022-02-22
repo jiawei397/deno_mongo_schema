@@ -206,6 +206,13 @@ export class Model<T> {
     options?: FindExOptions,
   ) {
     this.formatBsonId(filter);
+    if (options) {
+      for (const key in options) {
+        if ((options as any)[key] === undefined) {
+          delete (options as any)[key];
+        }
+      }
+    }
     await this.preHooks(hookType, filter, options);
   }
 
@@ -369,7 +376,7 @@ export class Model<T> {
     if (!filter) {
       return;
     }
-    if (filter?._id) {
+    if (filter._id) {
       const id = filter._id;
       if (typeof id === "string") {
         filter._id = transToMongoId(id);
