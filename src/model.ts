@@ -378,10 +378,10 @@ export class Model<T> {
       }
     }
     if (Array.isArray(filter.$or)) {
-      filter.$or.forEach(this.formatBsonId);
+      filter.$or.forEach(this.formatBsonId.bind(this));
     }
     if (Array.isArray(filter.$and)) {
-      filter.$and.forEach(this.formatBsonId);
+      filter.$and.forEach(this.formatBsonId.bind(this));
     }
   }
 
