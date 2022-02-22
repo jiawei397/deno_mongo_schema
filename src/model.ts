@@ -366,17 +366,22 @@ export class Model<T> {
   }
 
   private formatBsonId(filter?: Document) {
-    if (filter) {
-      if (filter?._id) {
-        const id = filter._id;
-        if (typeof id === "string") {
-          filter._id = transToMongoId(id);
-        } else if (Array.isArray(id.$in)) {
-          id.$in = id.$in.map((_id: any) => {
-            return transToMongoId(_id);
-          });
-        }
+    if (!filter) {
+      return;
+    }
+    if (filter?._id) {
+      const id = filter._id;
+      if (typeof id === "string") {
+        filter._id = transToMongoId(id);
+      } else if (Array.isArray(id.$in)) {
+        id.$in = id.$in.map(transToMongoId);
       }
+    }
+    if (Array.isArray(filter.$or)) {
+      filter.$or.forEach(this.formatBsonId);
+    }
+    if (Array.isArray(filter.$and)) {
+      filter.$and.forEach(this.formatBsonId);
     }
   }
 
