@@ -28,6 +28,11 @@ export function transferPopulateSelect(
         _select[item] = 1;
       }
     });
+  } else if (Array.isArray(select)) {
+    _select = {};
+    select.forEach((item) => {
+      _select[item] = 1;
+    });
   }
   return _select;
 }

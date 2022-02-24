@@ -332,7 +332,7 @@ describe("populates", () => {
     assertEquals(arr[1].user!._id, undefined);
   });
 
-  it("find populates is array and drop some fields", async () => {
+  it("find populates is object and drop some fields", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: {
@@ -376,6 +376,20 @@ describe("populates", () => {
     assertEquals(user.name, undefined);
     assertEquals(user._id, undefined);
     assertExists(user.age);
+  });
+
+  it("find populates is array and pick some fields", async () => {
+    const arr = await roleModel.findMany({}, {
+      populates: {
+        user: ["name", "age"],
+      },
+    });
+    assertEquals(arr.length, 2);
+    const user = arr[0].user!;
+    assertEquals(Object.keys(user).length, 2);
+    assertEquals(Object.keys(user), ["name", "age"]);
+    assertEquals(arr[0].user!._id, undefined);
+    assertEquals(arr[1].user!._id, undefined);
   });
 
   it("find populates is true", async () => {

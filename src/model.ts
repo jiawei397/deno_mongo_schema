@@ -327,7 +327,7 @@ export class Model<T> {
 
   private pickVirtual(
     virtualDoc: any,
-    pickMap: Exclude<PopulateSelect, string>,
+    pickMap: Exclude<PopulateSelect, string | string[]>,
     remainOriginId?: boolean,
   ) {
     let needPick = false; // if specified some key, then will only pick this keys

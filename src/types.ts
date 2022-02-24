@@ -11,7 +11,11 @@ import {
 } from "../deps.ts";
 import { Model } from "./model.ts";
 
-export type PopulateSelect = string | boolean | Record<string, 0 | 1>;
+export type PopulateSelect =
+  | string
+  | boolean
+  | string[]
+  | Record<string, 0 | 1>;
 
 export type RealPopulateSelect = Exclude<PopulateSelect, string>;
 
