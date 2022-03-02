@@ -315,6 +315,9 @@ export class Model<T> {
   }
 
   private transferId(doc: any, remainOriginId?: boolean) {
+    if (!doc) {
+      return doc;
+    }
     const hasOwnId = "id" in doc;
     if (!hasOwnId && doc._id) {
       doc.id = doc._id.toString();
