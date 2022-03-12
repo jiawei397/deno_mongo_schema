@@ -1,14 +1,4 @@
-// deno-lint-ignore-file no-explicit-any
-import {
-  MongoFactory,
-  MongoHookMethod,
-  Prop,
-  Schema,
-  SchemaDecorator,
-  SchemaFactory,
-  UpdateExOptions,
-} from "../mod.ts";
-import type { Document } from "../mod.ts";
+import { MongoFactory, Prop, Schema, SchemaDecorator } from "../mod.ts";
 
 await MongoFactory.forRoot("mongodb://192.168.21.176:27018/wiki");
 
