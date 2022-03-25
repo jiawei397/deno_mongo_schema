@@ -628,21 +628,33 @@ export class Model<T> {
       removeKey(doc);
     }
 
+    const now = new Date();
     if (!hasAtomicOperators(doc)) {
-      const oldDoc = { ...doc, modifyTime: new Date() };
+      const oldDoc = { ...doc, modifyTime: now };
       for (const key in doc) {
         if (Object.prototype.hasOwnProperty.call(doc, key)) {
           delete doc[key];
         }
       }
       doc["$set"] = oldDoc;
+      doc["$setOnInsert"] = {
+        createTime: now,
+      };
     } else {
       // add modifyTime
       if (doc["$set"]) {
-        doc["$set"]["modifyTime"] = new Date();
+        doc["$set"]["modifyTime"] = now;
       } else {
         doc["$set"] = {
-          modifyTime: new Date(),
+          modifyTime: now,
+        };
+      }
+      // add createTime
+      if (doc["$setOnInsert"]) {
+        doc["$setOnInsert"]["createTime"] = now;
+      } else {
+        doc["$setOnInsert"] = {
+          createTime: now,
         };
       }
     }
