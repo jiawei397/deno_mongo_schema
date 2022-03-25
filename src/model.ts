@@ -602,8 +602,10 @@ export class Model<T> {
   ) {
     this.formatBsonId(filter);
 
+    let timestamp;
     if (this.#schema) {
       const data = this.#schema.getMeta();
+      timestamp = this.#schema.getTimestamps();
       const removeKey = (doc: any) => {
         for (const dk in doc) {
           if (!Object.prototype.hasOwnProperty.call(doc, dk)) {
@@ -626,31 +628,34 @@ export class Model<T> {
 
     const now = new Date();
     if (!hasAtomicOperators(doc)) {
-      const oldDoc = { ...doc, modifyTime: now };
+      const oldDoc = { ...doc };
       for (const key in doc) {
         if (Object.prototype.hasOwnProperty.call(doc, key)) {
           delete doc[key];
         }
       }
       doc["$set"] = oldDoc;
-      doc["$setOnInsert"] = {
-        createTime: now,
-      };
-    } else {
+      if (timestamp) {
+        oldDoc[timestamp.updatedAt] = now;
+        doc["$setOnInsert"] = {
+          [timestamp.createdAt]: now,
+        };
+      }
+    } else if (timestamp) {
       // add modifyTime
       if (doc["$set"]) {
-        doc["$set"]["modifyTime"] = now;
+        doc["$set"][timestamp.updatedAt] = now;
       } else {
         doc["$set"] = {
-          modifyTime: now,
+          [timestamp.updatedAt]: now,
         };
       }
       // add createTime
       if (doc["$setOnInsert"]) {
-        doc["$setOnInsert"]["createTime"] = now;
+        doc["$setOnInsert"][timestamp.createdAt] = now;
       } else {
         doc["$setOnInsert"] = {
-          createTime: now,
+          [timestamp.createdAt]: now,
         };
       }
     }

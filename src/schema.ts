@@ -14,6 +14,8 @@ import {
 } from "./types.ts";
 import { getInstance } from "./utils/tools.ts";
 const PROP_META_KEY = Symbol("design:prop");
+const CREATED_AT_KEY = "createTime";
+const UPDATED_AT_KEY = "modifyTime";
 
 export function transferPopulateSelect(
   select?: PopulateSelect,
@@ -41,11 +43,13 @@ export class Schema {
   @Prop({
     default: Date.now,
   })
+  @SetCreatedAt()
   createTime?: Date;
 
   @Prop({
     default: Date.now,
   })
+  @SetUpdatedAt()
   modifyTime?: Date;
 
   _id?: Bson.ObjectId | string; // default id
@@ -63,6 +67,10 @@ export class BaseSchema {
 
   private populateMap: Map<string, RealPopulateSelect> = new Map();
   private populateParams: Map<string, VirtualTypeOptions> = new Map();
+  private timestamp!: {
+    createdAt: string;
+    updatedAt: string;
+  };
 
   pre(method: MongoHookMethod, callback: MongoHookCallback) {
     return this.hook(this.preHooks, method, callback);
@@ -146,11 +154,40 @@ export class BaseSchema {
     }
     return this.populateParams;
   }
+
+  getTimestamps() {
+    if (!this.timestamp) {
+      const instance = getInstance(this.Cls);
+      const createdAt = Reflect.getMetadata(CREATED_AT_KEY, instance) ||
+        CREATED_AT_KEY;
+      const updatedAt = Reflect.getMetadata(UPDATED_AT_KEY, instance) ||
+        UPDATED_AT_KEY;
+      this.timestamp = {
+        createdAt,
+        updatedAt,
+      };
+    }
+    return this.timestamp;
+  }
 }
 
 export function Prop(props?: SchemaType) {
   return function (target: TargetInstance, propertyKey: string) {
     addSchemaMetadata(target, propertyKey, props);
+    return target;
+  };
+}
+
+export function SetCreatedAt() {
+  return function (target: TargetInstance, propertyKey: string) {
+    Reflect.defineMetadata(CREATED_AT_KEY, propertyKey, target);
+    return target;
+  };
+}
+
+export function SetUpdatedAt() {
+  return function (target: TargetInstance, propertyKey: string) {
+    Reflect.defineMetadata(UPDATED_AT_KEY, propertyKey, target);
     return target;
   };
 }
@@ -186,7 +223,7 @@ export function getSchemaMetadata(
     map = {};
     Object.keys(instance).forEach((key) => {
       const meta = Reflect.getMetadata(PROP_META_KEY, instance, key);
-      if (meta) {
+      if (meta !== undefined) {
         map[key] = meta;
       }
     });
