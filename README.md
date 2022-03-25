@@ -6,25 +6,34 @@ and extend some API.
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
 [![tag](https://img.shields.io/badge/deno-v1.19.0-green.svg)](https://github.com/denoland/deno)
 
+> Breaking changes when on v0.9.0, because I want to change the word
+> `SchemaDecorator` to `Schema`, and the word `Schema` changed to `BaseSchema`.
+>
+> If you are using the old version, then you can global replace by IDE or run
+>
+> `deno run --allow-read --allow-write https://deno.land/x/deno_mongo_schema@v0.9.0/build/update.ts`
+>
+> once in your project.
+
 ## hooks
 
 ```ts
 import {
+  BaseSchema,
   getDB,
   getModel,
   MongoFactory,
   MongoHookMethod,
   Prop,
   Schema,
-  SchemaDecorator,
   UpdateExOptions,
 } from "https://deno.land/x/deno_mongo_schema@v0.8.5/mod.ts";
 import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.8.5/mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
-@SchemaDecorator()
-class User extends Schema {
+@Schema()
+class User extends BaseSchema {
   @Prop()
   age!: number;
 
@@ -105,16 +114,16 @@ Or you can use virtual like this:
 
 ```ts
 import {
+  BaseSchema,
   MongoFactory,
   Prop,
   Schema,
-  SchemaDecorator,
 } from "https://deno.land/x/deno_mongo_schema@v0.8.5/mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
-@SchemaDecorator()
-class User extends Schema {
+@Schema()
+class User extends BaseSchema {
   @Prop()
   group!: string;
 
@@ -122,8 +131,8 @@ class User extends Schema {
   title!: string;
 }
 
-@SchemaDecorator()
-class Role extends Schema {
+@Schema()
+class Role extends BaseSchema {
   @Prop()
   userId!: string;
 
@@ -207,4 +216,4 @@ UserSchema.virtual("role", {
 - [x] Modify schema as a decorator
 - [x] Unit
 - [ ] Configurable whether to convert _id
-- [ ] Configurable the createTime and modifyTime
+- [x] Configurable the createTime and modifyTime

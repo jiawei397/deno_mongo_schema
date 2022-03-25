@@ -1,24 +1,24 @@
 import { assert, describe, it } from "../test.deps.ts";
 import { User } from "../tests/common.ts";
-import { MongoFactory, SchemaDecorator, SchemaFactory } from "./factory.ts";
-import { BaseSchema } from "./schema.ts";
+import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
+import { SchemaHelper } from "./schema.ts";
 
 describe("SchemaFactory", () => {
   it("register by decorator", () => {
     const modelName = "user1";
-    @SchemaDecorator(modelName)
+    @Schema(modelName)
     // deno-lint-ignore no-unused-vars
     class User1 {}
 
     const schema = SchemaFactory.getSchemaByName(modelName);
     assert(schema);
-    assert(schema instanceof BaseSchema);
+    assert(schema instanceof SchemaHelper);
 
     SchemaFactory.unregister(modelName);
   });
 
   it("no name", () => {
-    @SchemaDecorator()
+    @Schema()
     class User2 {}
 
     const schema = SchemaFactory.getSchemaByName(User2.name);
@@ -29,8 +29,8 @@ describe("SchemaFactory", () => {
 
   it("forFeature", () => {
     class User3 {}
-    const schema1 = new BaseSchema(User3);
-    const schema2 = new BaseSchema(User3);
+    const schema1 = new SchemaHelper(User3);
+    const schema2 = new SchemaHelper(User3);
 
     const schemas = [
       {

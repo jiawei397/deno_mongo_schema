@@ -14,7 +14,7 @@ import {
 } from "../deps.ts";
 import { SchemaFactory } from "./factory.ts";
 import { Model } from "./model.ts";
-import { BaseSchema, getFormattedModelName } from "./schema.ts";
+import { getFormattedModelName, SchemaHelper } from "./schema.ts";
 
 export class MongoClient {
   #cluster?: Cluster;
@@ -113,7 +113,7 @@ export class MongoClient {
   async getCollectionByDb<T>(
     db: Database,
     name: string,
-    schema: BaseSchema,
+    schema: SchemaHelper,
   ) {
     assert(this.#cluster);
     const collection = new Collection<T>(

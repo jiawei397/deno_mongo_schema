@@ -22,8 +22,8 @@ import {
   yellow,
 } from "../deps.ts";
 import {
-  BaseSchema,
   getFormattedModelName,
+  SchemaHelper,
   transferPopulateSelect,
 } from "./schema.ts";
 import {
@@ -41,10 +41,10 @@ import { transToMongoId } from "./utils/tools.ts";
 export class Model<T> {
   #collection: Collection<T>;
 
-  #schema: BaseSchema;
+  #schema: SchemaHelper;
 
   constructor(
-    schema: BaseSchema,
+    schema: SchemaHelper,
     collection: Collection<T>,
   ) {
     this.#schema = schema;

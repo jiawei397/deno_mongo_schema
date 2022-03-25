@@ -1,4 +1,4 @@
-import { getSchemaMetadata, Prop, Schema } from "./schema.ts";
+import { BaseSchema, getSchemaMetadata, Prop } from "./schema.ts";
 import {
   assert,
   assertEquals,
@@ -7,7 +7,7 @@ import {
   it,
 } from "../test.deps.ts";
 import { User, UserSchema } from "../tests/common.ts";
-import { MongoFactory, SchemaDecorator, SchemaFactory } from "./factory.ts";
+import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
 import { Bson } from "../deps.ts";
 
 describe("metadata", () => {
@@ -38,7 +38,7 @@ describe("metadata", () => {
   });
 
   it("extends", () => {
-    @SchemaDecorator()
+    @Schema()
     class A {
       @Prop({
         index: true,
@@ -46,7 +46,7 @@ describe("metadata", () => {
       name: string;
     }
 
-    @SchemaDecorator()
+    @Schema()
     class B extends A {
       @Prop({
         required: true,
@@ -74,8 +74,8 @@ describe("metadata", () => {
 describe("virtual", () => {
   const userSchemaName = "user_schema_test";
   const roleSchemaName = "role_schema_test";
-  @SchemaDecorator(userSchemaName)
-  class User extends Schema {
+  @Schema(userSchemaName)
+  class User extends BaseSchema {
     @Prop()
     group!: string;
 
@@ -83,7 +83,7 @@ describe("virtual", () => {
     title!: string;
   }
 
-  class Role extends Schema {
+  class Role extends BaseSchema {
     @Prop()
     userId!: string;
 

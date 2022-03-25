@@ -9,7 +9,7 @@ import {
 } from "../deps.ts";
 import { MongoClient } from "./client.ts";
 import { Model } from "./model.ts";
-import { BaseSchema, getFormattedModelName } from "./schema.ts";
+import { getFormattedModelName, SchemaHelper } from "./schema.ts";
 import { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
 import { Cache } from "./utils/cache.ts";
@@ -107,9 +107,9 @@ export function InjectModel(modelNameOrCls: Constructor | string) {
 }
 
 export class SchemaFactory {
-  private static caches = new Map<string, BaseSchema>();
+  private static caches = new Map<string, SchemaHelper>();
 
-  static register(name: string, schema: BaseSchema) {
+  static register(name: string, schema: SchemaHelper) {
     this.caches.set(getFormattedModelName(name), schema);
   }
 
@@ -124,7 +124,7 @@ export class SchemaFactory {
   static createForClass(Cls: Constructor, name = Cls.name) {
     let schema = this.getSchemaByName(name);
     if (!schema) {
-      schema = new BaseSchema(Cls);
+      schema = new SchemaHelper(Cls);
       this.register(name, schema);
     }
     return schema;
@@ -132,7 +132,7 @@ export class SchemaFactory {
 
   static forFeature(arr: {
     name: string;
-    schema: BaseSchema;
+    schema: SchemaHelper;
   }[]) {
     arr.forEach((item) => {
       this.register(item.name, item.schema);
@@ -140,7 +140,10 @@ export class SchemaFactory {
   }
 }
 
-export function SchemaDecorator(name?: string) {
+/**
+ * An decorator to create Schema
+ */
+export function Schema(name?: string) {
   return (target: Constructor) => {
     SchemaFactory.createForClass(target, name);
   };

@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
 import {
+  BaseSchema,
   MongoFactory,
   MongoHookMethod,
   Prop,
   Schema,
-  SchemaDecorator,
   SchemaFactory,
   UpdateExOptions,
 } from "../mod.ts";
@@ -12,8 +12,8 @@ import type { Document } from "../mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
-@SchemaDecorator()
-class User extends Schema {
+@Schema()
+class User extends BaseSchema {
   @Prop()
   age!: number;
 

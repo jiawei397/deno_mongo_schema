@@ -39,7 +39,7 @@ export function transferPopulateSelect(
   return _select;
 }
 
-export class Schema {
+export class BaseSchema {
   @Prop({
     default: Date.now,
   })
@@ -56,7 +56,7 @@ export class Schema {
   id?: string; // default id
 }
 
-export class BaseSchema {
+export class SchemaHelper {
   Cls: Constructor;
   constructor(Cls: Constructor) {
     this.Cls = Cls;

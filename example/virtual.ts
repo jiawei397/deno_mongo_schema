@@ -1,16 +1,16 @@
 // deno-lint-ignore-file no-unused-vars
 import {
+  BaseSchema,
   MongoFactory,
   Prop,
   Schema,
-  SchemaDecorator,
   SchemaFactory,
 } from "../mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
-@SchemaDecorator("user1")
-class User extends Schema {
+@Schema("user1")
+class User extends BaseSchema {
   @Prop()
   group!: string;
 
@@ -20,8 +20,8 @@ class User extends Schema {
 
 // const UserSchema = SchemaFactory.createForClass(User);
 
-@SchemaDecorator()
-class Role extends Schema {
+@Schema()
+class Role extends BaseSchema {
   @Prop()
   userId!: string;
 

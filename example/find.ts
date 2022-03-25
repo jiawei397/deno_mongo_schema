@@ -1,9 +1,9 @@
-import { MongoFactory, Prop, Schema, SchemaDecorator } from "../mod.ts";
+import { BaseSchema, MongoFactory, Prop, Schema } from "../mod.ts";
 
 await MongoFactory.forRoot("mongodb://192.168.21.176:27018/wiki");
 
-@SchemaDecorator()
-class OneHourOnline extends Schema {
+@Schema()
+class OneHourOnline extends BaseSchema {
   @Prop({
     required: true,
     unique: true,

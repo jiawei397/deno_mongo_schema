@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Prop, Schema } from "./schema.ts";
+import { BaseSchema, Prop } from "./schema.ts";
 import {
   assert,
   assertEquals,
@@ -12,15 +12,15 @@ import {
 import { User, UserSchema } from "../tests/common.ts";
 import { MongoHookMethod, UpdateExOptions } from "./types.ts";
 import { Bson, Document } from "../deps.ts";
-import { MongoFactory, SchemaDecorator, SchemaFactory } from "./factory.ts";
+import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
 
 // if want to use other name, must use `SchemaFactory.createForClass` to register and use ` MongoFactory.getModel<User>("xxx")`
 // SchemaFactory.createForClass(User, "mongo_test_schema_users");
 // const userModel = await MongoFactory.getModel<User>('mongo_test_schema_users');
 const userModel = await MongoFactory.getModel(User);
 
-@SchemaDecorator()
-class Role extends Schema {
+@Schema()
+class Role extends BaseSchema {
   @Prop()
   userId!: string | Bson.ObjectId;
 
@@ -472,13 +472,13 @@ describe("populates", () => {
 
 describe("Prop", () => {
   it("default", async () => {
-    class Base extends Schema {
+    class Base extends BaseSchema {
       @Prop({
         default: "hello",
       })
       name?: string;
     }
-    @SchemaDecorator()
+    @Schema()
     class Blog extends Base {
       @Prop()
       title!: string;
