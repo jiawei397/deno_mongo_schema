@@ -11,7 +11,7 @@ and extend some API.
 >
 > If you are using the old version, then you can global replace by IDE or run
 >
-> `deno run --allow-read --allow-write https://deno.land/x/deno_mongo_schema@v0.9.0/build/update.ts`
+> `deno run --allow-read --allow-write --unstable https://deno.land/x/deno_mongo_schema@v0.9.0/build/update.ts`
 >
 > once in your project.
 

@@ -1,4 +1,40 @@
-# [](https://github.com/jiawei397/deno_mongo_schema/compare/v0.8.2...v) (2022-03-02)
+# [](https://github.com/jiawei397/deno_mongo_schema/compare/v0.9.0...v) (2022-03-25)
+
+
+
+# [0.9.0](https://github.com/jiawei397/deno_mongo_schema/compare/v0.8.5...v0.9.0) (2022-03-25)
+
+
+### Performance Improvements
+
+* change SchemaDecorator and Schema ([e83f6f8](https://github.com/jiawei397/deno_mongo_schema/commit/e83f6f8ae6ad27b2d2ecd01837a162e8befd02c5))
+
+
+
+## [0.8.5](https://github.com/jiawei397/deno_mongo_schema/compare/v0.8.4...v0.8.5) (2022-03-25)
+
+
+### Features
+
+* **schema:** can define createTime and modifyTime ([e39f9fb](https://github.com/jiawei397/deno_mongo_schema/commit/e39f9fbe88451e3ca2a754ff56d35146eb736cde))
+
+
+### Performance Improvements
+
+* **model:** use #schema directly ([0cb6498](https://github.com/jiawei397/deno_mongo_schema/commit/0cb64980f402862c72ef12661488c34a82ee532d))
+
+
+
+## [0.8.4](https://github.com/jiawei397/deno_mongo_schema/compare/v0.8.3...v0.8.4) (2022-03-25)
+
+
+### Bug Fixes
+
+* **model:** findOneAndUpdate can insert createTime ([f06ff24](https://github.com/jiawei397/deno_mongo_schema/commit/f06ff245704257d46901867b95bed9570be0197a))
+
+
+
+## [0.8.3](https://github.com/jiawei397/deno_mongo_schema/compare/v0.8.2...v0.8.3) (2022-03-12)
 
 
 
