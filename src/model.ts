@@ -55,10 +55,6 @@ export class Model<T> {
     return this.#collection;
   }
 
-  private get schema() {
-    return this.#schema;
-  }
-
   private getPopulateMap(populates?: Record<string, PopulateSelect>) {
     if (populates) {
       const populateMap = new Map();
@@ -71,12 +67,12 @@ export class Model<T> {
         return populateMap;
       }
     } else {
-      return this.schema?.getPopulateMap();
+      return this.#schema?.getPopulateMap();
     }
   }
 
   private getPopulateParams() {
-    return this.schema?.getPopulateParams();
+    return this.#schema?.getPopulateParams();
   }
 
   private _find(
@@ -396,21 +392,21 @@ export class Model<T> {
   }
 
   private async preHooks(hook: MongoHookMethod, ...args: any[]) {
-    if (!this.schema) {
+    if (!this.#schema) {
       return;
     }
 
-    const fns = this.schema.getPreHookByMethod(hook);
+    const fns = this.#schema.getPreHookByMethod(hook);
     if (fns) {
       await Promise.all(fns.map((fn) => fn.apply(this, args)));
     }
   }
 
   private async postHooks(hook: MongoHookMethod, ...args: any[]) {
-    if (!this.schema) {
+    if (!this.#schema) {
       return;
     }
-    const fns = this.schema.getPostHookByMethod(hook);
+    const fns = this.#schema.getPostHookByMethod(hook);
     if (fns) {
       await Promise.all(fns.map((fn) => fn.apply(this, args)));
     }
@@ -422,7 +418,7 @@ export class Model<T> {
         doc._id = transToMongoId(doc._id);
       }
     });
-    if (!this.schema) {
+    if (!this.#schema) {
       return;
     }
 
@@ -445,7 +441,7 @@ export class Model<T> {
   }
 
   private checkMetaBeforeInsert(docs: Document[]) {
-    const data = this.schema.getMeta();
+    const data = this.#schema.getMeta();
     if (!data) {
       return;
     }
@@ -517,7 +513,7 @@ export class Model<T> {
     };
     this.transferId(res, options?.remainOriginId);
 
-    const meta = this.schema.getMeta();
+    const meta = this.#schema.getMeta();
     if (meta) {
       const newDoc: any = res;
       Object.keys(meta).forEach((key) => {
@@ -606,8 +602,8 @@ export class Model<T> {
   ) {
     this.formatBsonId(filter);
 
-    if (this.schema) {
-      const data = this.schema.getMeta();
+    if (this.#schema) {
+      const data = this.#schema.getMeta();
       const removeKey = (doc: any) => {
         for (const dk in doc) {
           if (!Object.prototype.hasOwnProperty.call(doc, dk)) {
@@ -788,8 +784,8 @@ export class Model<T> {
   }
 
   async initModel() {
-    assert(this.schema, "schema is not defined");
-    const data = this.schema.getMeta();
+    assert(this.#schema, "schema is not defined");
+    const data = this.#schema.getMeta();
     const indexes: IndexOptions[] = [];
     for (const key in data) {
       const map: SchemaType = data[key];
