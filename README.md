@@ -108,6 +108,35 @@ const delMulti = await userModel.deleteMany({
 console.log(delMulti);
 ```
 
+Here are some useful APIs:
+
+- find
+  - findById
+  - findOne
+  - findMany
+  - countDocuments
+  - aggregate
+  - distinct
+- insert
+  - insertOne
+  - insertMany
+- update
+  - findByIdAndUpdate
+  - findOneAndUpdate
+  - updateMany
+  - updateOne
+- delete
+  - deleteMany
+  - deleteOne/findOneAndDelete
+  - deleteById/findByIdAndDelete
+- index
+  - syncIndexes
+  - dropIndexes
+  - listIndexes
+  - createIndexes
+- drop collection
+  - drop
+
 ## Virtual
 
 Or you can use virtual like this:
