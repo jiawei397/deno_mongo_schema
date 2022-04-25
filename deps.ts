@@ -3,10 +3,10 @@ export {
   Collection,
   Database,
   MongoClient as OriginalMongoClient,
-} from "https://deno.land/x/mongo@v0.29.2/mod.ts";
-export { hasAtomicOperators } from "https://deno.land/x/mongo@v0.29.2/src/collection/collection.ts";
-export { WireProtocol } from "https://deno.land/x/mongo@v0.29.2/src/protocol/mod.ts";
-export { Cluster } from "https://deno.land/x/mongo@v0.29.2/src/cluster.ts";
+} from "https://deno.land/x/mongo@v0.29.4/mod.ts";
+export { hasAtomicOperators } from "https://deno.land/x/mongo@v0.29.4/src/collection/collection.ts";
+export { WireProtocol } from "https://deno.land/x/mongo@v0.29.4/src/protocol/mod.ts";
+export { Cluster } from "https://deno.land/x/mongo@v0.29.4/src/cluster.ts";
 export type {
   AggregateOptions,
   AggregatePipeline,
@@ -27,13 +27,13 @@ export type {
   ListDatabaseInfo,
   UpdateFilter,
   UpdateOptions,
-} from "https://deno.land/x/mongo@v0.29.2/mod.ts";
+} from "https://deno.land/x/mongo@v0.29.4/mod.ts";
 export {
   MongoDriverError,
   MongoError,
   MongoServerError,
-} from "https://deno.land/x/mongo@v0.29.2/src/error.ts";
-export { parse } from "https://deno.land/x/mongo@v0.29.2/src/utils/uri.ts";
+} from "https://deno.land/x/mongo@v0.29.4/src/error.ts";
+export { parse } from "https://deno.land/x/mongo@v0.29.4/src/utils/uri.ts";
 export {
   bgBlue,
   bgRgb24,
