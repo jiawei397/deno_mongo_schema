@@ -1,6 +1,6 @@
 # deno_mongo_schema
 
-Extend from **[deno_mongo v0.29.2](https://deno.land/x/mongo)**, support Schema
+Extend from **[deno_mongo v0.29.4](https://deno.land/x/mongo)**, support Schema
 and extend some API.
 
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
@@ -11,7 +11,7 @@ and extend some API.
 >
 > If you are using the old version, then you can global replace by IDE or run
 >
-> `deno run --allow-read --allow-write --unstable https://deno.land/x/deno_mongo_schema@v0.9.1/build/update.ts`
+> `deno run --allow-read --allow-write --unstable https://deno.land/x/deno_mongo_schema@v0.9.2/build/update.ts`
 >
 > once in your project.
 
@@ -27,8 +27,8 @@ import {
   Prop,
   Schema,
   UpdateExOptions,
-} from "https://deno.land/x/deno_mongo_schema@v0.9.1/mod.ts";
-import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.9.1/mod.ts";
+} from "https://deno.land/x/deno_mongo_schema@v0.9.2/mod.ts";
+import type { Document } from "https://deno.land/x/deno_mongo_schema@v0.9.2/mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
@@ -147,7 +147,7 @@ import {
   MongoFactory,
   Prop,
   Schema,
-} from "https://deno.land/x/deno_mongo_schema@v0.9.1/mod.ts";
+} from "https://deno.land/x/deno_mongo_schema@v0.9.2/mod.ts";
 
 await MongoFactory.forRoot("mongodb://localhost:27017/test");
 
