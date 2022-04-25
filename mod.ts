@@ -10,4 +10,24 @@ export * from "./src/schema.ts";
 export * from "./src/factory.ts";
 
 export { Bson, Database } from "./deps.ts";
-export type { Document, Filter, FindOptions } from "./deps.ts";
+export type {
+  AggregateOptions,
+  AggregatePipeline,
+  BuildInfo,
+  ConnectOptions,
+  CountOptions,
+  CreateIndexOptions,
+  DeleteOptions,
+  DistinctOptions,
+  Document,
+  DropIndexOptions,
+  Filter,
+  FindAndModifyOptions,
+  FindOptions,
+  IndexOptions,
+  InsertDocument,
+  InsertOptions,
+  ListDatabaseInfo,
+  UpdateFilter,
+  UpdateOptions,
+} from "./deps.ts";
