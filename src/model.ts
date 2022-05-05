@@ -802,10 +802,11 @@ export class Model<T> {
         required: _required,
         default: _default,
         validate: _validate,
+        expires,
         ...otherParams
       } = map;
       indexes.push({
-        expireAfterSeconds: map.expires,
+        expireAfterSeconds: expires,
         name: key + "_1",
         key: { [key]: index === "text" ? "text" : 1 },
         ...otherParams,
