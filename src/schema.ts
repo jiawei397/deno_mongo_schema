@@ -51,9 +51,6 @@ export class BaseSchema {
   })
   @SetUpdatedAt()
   modifyTime?: Date;
-
-  _id?: Bson.ObjectId | string; // default id
-  id?: string; // default id
 }
 
 export class SchemaHelper {

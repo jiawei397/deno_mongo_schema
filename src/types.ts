@@ -20,25 +20,18 @@ export type PopulateSelect =
 export type RealPopulateSelect = Exclude<PopulateSelect, string>;
 
 export type ExOptions = {
-  remainOriginId?: boolean; // is keep _id
+  remainOriginId: true; // is keep _id
 };
 
 export type FindExOptions = FindOptions & {
   populates?: Record<string, PopulateSelect>;
-} & ExOptions;
+};
 
-export type InsertExOptions = InsertOptions & ExOptions;
+export type InsertExOptions = InsertOptions;
 
-export interface FindAndUpdateExOptions extends FindAndModifyOptions {
-  /** @deprecated Please drop it soon */
-  useFindAndModify?: boolean;
-  remainOriginId?: boolean;
-}
+export type FindAndUpdateExOptions = FindAndModifyOptions;
 
-export interface UpdateExOptions extends UpdateOptions {
-  /** @deprecated Please drop it soon */
-  useFindAndModify?: boolean;
-}
+export type UpdateExOptions = UpdateOptions;
 
 export type Constructor = new (...args: any[]) => any;
 

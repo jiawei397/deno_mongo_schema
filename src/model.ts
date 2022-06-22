@@ -27,6 +27,7 @@ import {
   transferPopulateSelect,
 } from "./schema.ts";
 import {
+  ExOptions,
   FindAndUpdateExOptions,
   FindExOptions,
   InsertExOptions,
@@ -38,14 +39,19 @@ import {
 } from "./types.ts";
 import { transToMongoId } from "./utils/tools.ts";
 
-export class Model<T> {
-  #collection: Collection<T>;
+export class Model<
+  T,
+  U = T & { id: string },
+  O = U & { _id: Bson.ObjectId },
+  V = T & { _id: Bson.ObjectId },
+> {
+  #collection: Collection<V>;
 
   #schema: SchemaHelper;
 
   constructor(
     schema: SchemaHelper,
-    collection: Collection<T>,
+    collection: Collection<V>,
   ) {
     this.#schema = schema;
     this.#collection = collection;
@@ -76,8 +82,8 @@ export class Model<T> {
   }
 
   private _find(
-    filter?: Filter<T>,
-    options?: FindExOptions,
+    filter?: Filter<U>,
+    options?: FindExOptions & Partial<ExOptions>,
   ) {
     const {
       remainOriginId: _,
@@ -242,26 +248,48 @@ export class Model<T> {
   }
 
   async findOne(
-    filter?: Filter<T>,
+    filter?: Filter<U>,
     options?: FindExOptions,
+  ): Promise<U | null>;
+  async findOne(
+    filter?: Filter<U>,
+    options?: FindExOptions & ExOptions,
+  ): Promise<O | null>;
+  async findOne(
+    filter?: Filter<U>,
+    options?: FindExOptions & Partial<ExOptions>,
   ) {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
     await this.afterFind(doc, filter, options);
-    return doc as T | undefined;
+    if (options?.remainOriginId) {
+      return doc as O | null;
+    }
+    return doc;
   }
 
   async findMany(
-    filter?: Filter<T>,
+    filter?: Filter<U>,
     options?: FindExOptions,
+  ): Promise<U[]>;
+  async findMany(
+    filter?: Filter<U>,
+    options?: FindExOptions & ExOptions,
+  ): Promise<O[]>;
+  async findMany(
+    filter?: Filter<U>,
+    options?: FindExOptions & Partial<ExOptions>,
   ) {
     await this.preFind(MongoHookMethod.findMany, filter, options);
     const docs = await this._find(filter, options).toArray();
     await this.afterFind(docs, filter, options);
-    return docs as T[];
+    return docs;
   }
 
-  private formatFindDoc(doc: any, options?: FindExOptions) {
+  private formatFindDoc(
+    doc: any,
+    options?: FindExOptions & Partial<ExOptions>,
+  ) {
     if (!doc) {
       return;
     }
@@ -488,28 +516,42 @@ export class Model<T> {
     await this.postHooks(MongoHookMethod.create, docs);
   }
 
-  async insertOne(doc: InsertDocument<T>, options?: InsertOptions) {
+  async insertOne(doc: InsertDocument<V>, options?: InsertOptions) {
     const { insertedIds } = await this.insertMany([doc], options);
     return insertedIds[0];
   }
 
   async insertMany(
-    docs: InsertDocument<T>[],
+    docs: InsertDocument<V>[],
     options?: InsertExOptions,
   ) {
     const clonedDocs = docs.map((doc) => ({ ...doc }));
     await this.preInsert(clonedDocs);
     const res = await this.#collection.insertMany(clonedDocs, options);
     await this.afterInsert(clonedDocs);
-    return res;
+    return {
+      insertedIds: res.insertedIds.map((id) => id + ""),
+      insertedCount: res.insertedCount,
+    };
   }
 
   /** @deprecated please use insertOne instead */
-  async save(doc: InsertDocument<T>, options?: InsertExOptions) {
+  async save(
+    doc: InsertDocument<V>,
+    options?: InsertExOptions,
+  ): Promise<U>;
+  async save(
+    doc: InsertDocument<V>,
+    options?: InsertExOptions & ExOptions,
+  ): Promise<O>;
+  async save(
+    doc: InsertDocument<V>,
+    options?: InsertExOptions & Partial<ExOptions>,
+  ) {
     const id = await this.insertOne(doc, options);
     const res = {
       ...doc,
-      _id: id,
+      _id: transToMongoId(id),
     };
     this.transferId(res, options?.remainOriginId);
 
@@ -524,7 +566,10 @@ export class Model<T> {
         newDoc[key] = this.getFormattedDefault(val.default);
       });
     }
-    return res;
+    if (options?.remainOriginId) {
+      return res as unknown as O;
+    }
+    return res as unknown as U;
   }
 
   private async preFindOneAndUpdate(
@@ -542,7 +587,7 @@ export class Model<T> {
 
   private async afterFindOneAndUpdate(
     doc?: Document,
-    options?: FindAndUpdateExOptions,
+    options?: FindAndUpdateExOptions & Partial<ExOptions>,
   ) {
     await this.postHooks(MongoHookMethod.findOneAndUpdate, doc);
     if (options?.new) {
@@ -552,32 +597,65 @@ export class Model<T> {
 
   findByIdAndUpdate(
     id: string | Bson.ObjectId,
-    update: UpdateFilter<T>,
+    update: UpdateFilter<V>,
     options?: FindAndUpdateExOptions,
+  ): Promise<U>;
+  findByIdAndUpdate(
+    id: string | Bson.ObjectId,
+    update: UpdateFilter<V>,
+    options?: FindAndUpdateExOptions & ExOptions,
+  ): Promise<O>;
+  async findByIdAndUpdate(
+    id: string | Bson.ObjectId,
+    update: UpdateFilter<V>,
+    options?: FindAndUpdateExOptions & Partial<ExOptions>,
   ) {
     const filter = {
       _id: transToMongoId(id),
     };
-    if (options) {
-      return this.findOneAndUpdate(filter, update, options);
+    const result = await this.findOneAndUpdate(filter, update, options);
+    if (options?.remainOriginId) {
+      return result as unknown as O;
     }
-    return this.findOneAndUpdate(filter, update);
+    return result as unknown as U;
   }
 
   findById(
     id: string | Bson.ObjectId,
     options?: FindExOptions,
+  ): Promise<U | null>;
+  findById(
+    id: string | Bson.ObjectId,
+    options?: FindExOptions & ExOptions,
+  ): Promise<O | null>;
+  async findById(
+    id: string | Bson.ObjectId,
+    options?: FindExOptions & Partial<ExOptions>,
   ) {
     const filter = {
       _id: transToMongoId(id),
     };
-    return this.findOne(filter, options);
+    const result = await this.findOne(filter, options);
+    if (options?.remainOriginId) {
+      return result as unknown as O | null;
+    }
+    return result as unknown as U | null;
   }
 
   async findOneAndUpdate(
     filter: Filter<T>,
-    update: UpdateFilter<T>,
-    options: FindAndUpdateExOptions = {},
+    update: UpdateFilter<V>,
+    options?: FindAndUpdateExOptions,
+  ): Promise<U>;
+  async findOneAndUpdate(
+    filter: Filter<T>,
+    update: UpdateFilter<V>,
+    options?: FindAndUpdateExOptions & ExOptions,
+  ): Promise<O>;
+  async findOneAndUpdate(
+    filter: Filter<T>,
+    update: UpdateFilter<V>,
+    options: FindAndUpdateExOptions & Partial<ExOptions> = {},
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
     const updatedDoc = await this.#collection.findAndModify(filter, {
@@ -588,7 +666,10 @@ export class Model<T> {
       fields: options?.fields,
     });
     await this.afterFindOneAndUpdate(updatedDoc, options);
-    return updatedDoc;
+    if (options.remainOriginId) {
+      return updatedDoc as unknown as O;
+    }
+    return updatedDoc as unknown as U;
   }
 
   /**
@@ -679,7 +760,7 @@ export class Model<T> {
 
   async updateMany(
     filter: Filter<T>,
-    doc: UpdateFilter<T>,
+    doc: UpdateFilter<V>,
     options?: UpdateExOptions,
   ) {
     await this.preUpdate(filter, doc, options);
@@ -690,7 +771,7 @@ export class Model<T> {
 
   async updateOne(
     filter: Filter<T>,
-    update: UpdateFilter<T>,
+    update: UpdateFilter<V>,
     options?: UpdateExOptions,
   ) {
     await this.preUpdate(filter, update, options);
