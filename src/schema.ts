@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Bson, Reflect } from "../deps.ts";
+import { Reflect } from "../deps.ts";
 import {
   Constructor,
   Hooks,
