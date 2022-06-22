@@ -248,7 +248,7 @@ export class Model<T> {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
     await this.afterFind(doc, filter, options);
-    return doc as T | undefined;
+    return doc as Required<T> | undefined;
   }
 
   async findMany(
@@ -258,7 +258,7 @@ export class Model<T> {
     await this.preFind(MongoHookMethod.findMany, filter, options);
     const docs = await this._find(filter, options).toArray();
     await this.afterFind(docs, filter, options);
-    return docs as T[];
+    return docs as Required<T>[];
   }
 
   private formatFindDoc(doc: any, options?: FindExOptions) {
