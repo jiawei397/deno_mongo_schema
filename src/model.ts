@@ -248,7 +248,7 @@ export class Model<T> {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
     await this.afterFind(doc, filter, options);
-    return doc as Required<T> | undefined;
+    return doc as Required<T> | null;
   }
 
   async findMany(
@@ -588,7 +588,7 @@ export class Model<T> {
       fields: options?.fields,
     });
     await this.afterFindOneAndUpdate(updatedDoc, options);
-    return updatedDoc;
+    return updatedDoc as Required<T> | null;
   }
 
   /**
