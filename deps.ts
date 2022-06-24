@@ -52,4 +52,4 @@ export {
   assertEquals,
 } from "https://deno.land/std@0.107.0/testing/asserts.ts";
 
-export { Reflect } from "https://deno.land/x/deno_reflect@v0.2.0/mod.ts";
+export { Reflect } from "https://deno.land/x/deno_reflect@v0.2.1/mod.ts";
