@@ -6,8 +6,8 @@ import {
   SchemaFactory,
 } from "../mod.ts";
 
-export const dbUrl = "mongodb://localhost:27017/test";
-// export const dbUrl = "mongodb://10.100.30.65:27017/test";
+// export const dbUrl = "mongodb://localhost:27017/test";
+export const dbUrl = "mongodb://10.100.30.65:27017/test";
 
 await MongoFactory.forRoot(dbUrl);
 
@@ -26,3 +26,7 @@ export class User extends BaseSchema {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+export function close() {
+  return MongoFactory.close();
+}

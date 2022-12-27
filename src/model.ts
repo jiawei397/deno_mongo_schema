@@ -1,23 +1,27 @@
 // deno-lint-ignore-file no-explicit-any
 import {
   AggregateOptions,
-  AggregatePipeline,
+  // AggregatePipeline,
   assert,
   blue,
-  Bson,
+  BulkWriteOptions,
   Collection,
   CountOptions,
-  CreateIndexOptions,
+  // CreateIndexOptions,
   DeleteOptions,
   DistinctOptions,
   Document,
-  DropIndexOptions,
+  DropIndexesOptions,
+  // DropIndexOptions,
   Filter,
   FindOptions,
-  hasAtomicOperators,
-  IndexOptions,
-  InsertDocument,
-  InsertOptions,
+  IndexDescription,
+  // IndexOptions,
+  InsertOneOptions,
+  // InsertDocument,
+  // InsertOptions,
+  ObjectId,
+  OptionalUnlessRequiredId,
   UpdateFilter,
   yellow,
 } from "../deps.ts";
@@ -37,7 +41,7 @@ import {
   UpdateExOptions,
   VirtualTypeOptions,
 } from "./types.ts";
-import { transToMongoId } from "./utils/tools.ts";
+import { hasAtomicOperators, transToMongoId } from "./utils/tools.ts";
 
 export class Model<T extends Document> {
   #collection: Collection<T>;
@@ -96,7 +100,7 @@ export class Model<T extends Document> {
       });
     } else {
       const res = this.#collection.find(
-        filter,
+        filter || {},
         others,
       );
       if (options?.skip) {
@@ -236,7 +240,7 @@ export class Model<T extends Document> {
    * @deprecated
    */
   find(
-    filter?: Filter<T>,
+    filter: Filter<T> = {},
     options?: FindOptions,
   ) {
     return this.#collection.find(filter, options);
@@ -489,24 +493,32 @@ export class Model<T extends Document> {
     await this.postHooks(MongoHookMethod.create, docs);
   }
 
-  async insertOne(doc: InsertDocument<T>, options?: InsertOptions) {
-    const { insertedIds } = await this.insertMany([doc], options);
-    return insertedIds[0];
+  async insertOne(
+    doc: OptionalUnlessRequiredId<T>,
+    options: InsertOneOptions = {},
+  ) {
+    // const { insertedIds } = await this.insertMany([doc], options);
+    // return insertedIds[0];
+    const clonedDocs = [{ ...doc }];
+    await this.preInsert(clonedDocs);
+    const res = await this.#collection.insertOne(clonedDocs[0], options!);
+    await this.afterInsert(clonedDocs);
+    return res.insertedId;
   }
 
   async insertMany(
-    docs: InsertDocument<T>[],
-    options?: InsertExOptions,
+    docs: OptionalUnlessRequiredId<T>[],
+    options?: BulkWriteOptions,
   ) {
     const clonedDocs = docs.map((doc) => ({ ...doc }));
     await this.preInsert(clonedDocs);
-    const res = await this.#collection.insertMany(clonedDocs, options);
+    const res = await this.#collection.insertMany(clonedDocs, options!);
     await this.afterInsert(clonedDocs);
     return res;
   }
 
   /** @deprecated please use insertOne instead */
-  async save(doc: InsertDocument<T>, options?: InsertExOptions) {
+  async save(doc: OptionalUnlessRequiredId<T>, options?: InsertExOptions) {
     const id = await this.insertOne(doc, options);
     const res = {
       ...doc,
@@ -531,7 +543,7 @@ export class Model<T extends Document> {
   private async preFindOneAndUpdate(
     filter: Document,
     update: Document,
-    options?: UpdateExOptions,
+    options: UpdateExOptions,
   ) {
     await this.preUpdateHook(
       MongoHookMethod.findOneAndUpdate,
@@ -542,7 +554,7 @@ export class Model<T extends Document> {
   }
 
   private async afterFindOneAndUpdate(
-    doc?: Document,
+    doc?: Document | null,
     options?: FindAndUpdateExOptions,
   ) {
     await this.postHooks(MongoHookMethod.findOneAndUpdate, doc);
@@ -552,7 +564,7 @@ export class Model<T extends Document> {
   }
 
   findByIdAndUpdate(
-    id: string | Bson.ObjectId,
+    id: string | ObjectId,
     update: UpdateFilter<T>,
     options?: FindAndUpdateExOptions,
   ) {
@@ -566,7 +578,7 @@ export class Model<T extends Document> {
   }
 
   findById(
-    id: string | Bson.ObjectId,
+    id: string | ObjectId,
     options?: FindExOptions,
   ) {
     const filter = {
@@ -581,15 +593,13 @@ export class Model<T extends Document> {
     options: FindAndUpdateExOptions = {},
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
-    const updatedDoc = await this.#collection.findAndModify(filter, {
+    const updatedDoc = await this.#collection.findOneAndUpdate(
+      filter,
       update,
-      sort: options?.sort,
-      new: options?.new,
-      upsert: options?.upsert,
-      fields: options?.fields,
-    });
-    await this.afterFindOneAndUpdate(updatedDoc, options);
-    return updatedDoc as Required<T> | null;
+      options,
+    );
+    await this.afterFindOneAndUpdate(updatedDoc.value, options);
+    return updatedDoc.value;
   }
 
   /**
@@ -599,7 +609,7 @@ export class Model<T extends Document> {
     hook: MongoHookMethod,
     filter: Document,
     doc: Document,
-    options?: UpdateExOptions,
+    options: UpdateExOptions,
   ) {
     this.formatBsonId(filter);
 
@@ -665,7 +675,7 @@ export class Model<T extends Document> {
   private async preUpdate(
     filter: Document,
     doc: Document,
-    options?: UpdateExOptions,
+    options: UpdateExOptions,
   ) {
     await this.preUpdateHook(MongoHookMethod.update, filter, doc, options);
   }
@@ -673,7 +683,7 @@ export class Model<T extends Document> {
   private async afterUpdate(
     filter: Document,
     doc: Document,
-    options?: UpdateExOptions,
+    options: UpdateExOptions,
   ) {
     await this.postHooks(MongoHookMethod.update, filter, doc, options);
   }
@@ -681,7 +691,7 @@ export class Model<T extends Document> {
   async updateMany(
     filter: Filter<T>,
     doc: UpdateFilter<T>,
-    options?: UpdateExOptions,
+    options: UpdateExOptions = {},
   ) {
     await this.preUpdate(filter, doc, options);
     const res = await this.#collection.updateMany(filter, doc, options);
@@ -692,7 +702,7 @@ export class Model<T extends Document> {
   async updateOne(
     filter: Filter<T>,
     update: UpdateFilter<T>,
-    options?: UpdateExOptions,
+    options: UpdateExOptions = {},
   ) {
     await this.preUpdate(filter, update, options);
     const res = await this.#collection.updateOne(filter, update, options);
@@ -718,26 +728,26 @@ export class Model<T extends Document> {
 
   async deleteMany(
     filter: Filter<T>,
-    options?: DeleteOptions,
+    options: DeleteOptions = {},
   ): Promise<number> {
     await this.preDelete(filter, options);
     const res = await this.#collection.deleteMany(filter, options);
-    await this.afterDelete(filter, options, res);
-    return res;
+    await this.afterDelete(filter, options, res.deletedCount);
+    return res.deletedCount;
   }
 
   delete = this.deleteMany;
 
-  deleteOne(
-    filter: Filter<T>,
-    options?: DeleteOptions,
-  ) {
-    return this.delete(filter, { ...options, limit: 1 });
+  async deleteOne(filter: Filter<T>) {
+    await this.preDelete(filter, {});
+    const res = await this.#collection.deleteOne(filter);
+    await this.afterDelete(filter, {}, res.deletedCount);
+    return res.deletedCount;
   }
 
   findOneAndDelete = this.deleteOne;
 
-  deleteById(id: string | Bson.ObjectId) {
+  deleteById(id: string | ObjectId) {
     const filter = {
       _id: transToMongoId(id),
     };
@@ -746,30 +756,59 @@ export class Model<T extends Document> {
 
   findByIdAndDelete = this.deleteById;
 
-  distinct(key: string, query?: Filter<T>, options?: DistinctOptions) {
+  /**
+   * Perform a bulkWrite operation without a fluent API
+   *
+   * Legal operation types are
+   * - `insertOne`
+   * - `replaceOne`
+   * - `updateOne`
+   * - `updateMany`
+   * - `deleteOne`
+   * - `deleteMany`
+   *
+   * Please note that raw operations are no longer accepted as of driver version 4.0.
+   *
+   * If documents passed in do not contain the **_id** field,
+   * one will be added to each of the documents missing it by the driver, mutating the document. This behavior
+   * can be overridden by setting the **forceServerObjectId** flag.
+   *
+   * @param operations - Bulk operations to perform
+   * @param options - Optional settings for the command
+   * @param callback - An optional callback, a Promise will be returned if none is provided
+   * @throws MongoDriverError if operations is not an array
+   */
+  // bulkWrite(
+  //   operations: BulkWriteOperation[],
+  // ) {
+  //   return this.#protocol.commandSingle(this.#dbName, {});
+  // }
+
+  distinct(key: string, query: Filter<T> = {}, options: DistinctOptions = {}) {
     return this.#collection.distinct(key, query, options);
   }
 
-  aggregate<U = T>(
-    pipeline: AggregatePipeline<U>[],
-    options?: AggregateOptions,
+  aggregate<U extends Document = T>(
+    pipeline: Document[],
+    options: AggregateOptions = {},
   ) {
-    return this.#collection.aggregate(pipeline, options);
+    return this.#collection.aggregate<U>(pipeline, options);
   }
 
   async syncIndexes() {
     if (!this.#schema) {
       return false;
     }
-    await this.dropIndexes({
-      index: "*",
-    });
+    await this.dropIndexes();
     await this.initModel();
     return true;
   }
 
-  dropIndexes(options: DropIndexOptions) {
-    return this.#collection.dropIndexes(options);
+  dropIndexes(options?: DropIndexesOptions) {
+    if (options) {
+      return this.#collection.dropIndexes(options);
+    }
+    return this.#collection.dropIndexes();
   }
 
   drop() {
@@ -780,21 +819,22 @@ export class Model<T extends Document> {
     return this.#collection.listIndexes();
   }
 
-  createIndexes(options: CreateIndexOptions) {
-    return this.#collection.createIndexes(options);
+  createIndexes(options: {
+    indexes: IndexDescription[];
+  }) {
+    return this.#collection.createIndexes(options.indexes);
   }
 
-  countDocuments(filter?: Filter<T>, options?: CountOptions) {
+  countDocuments(filter: Filter<T> = {}, options: CountOptions = {}) {
     this.formatBsonId(filter);
     return this.#collection.countDocuments(filter, options);
   }
 
   async initModel() {
     assert(this.#schema, "schema is not defined");
-    console.log("this.#schema.Cls", this.#schema.Cls);
     const injectedIndexes = getSchemaInjectedIndexes(this.#schema.Cls);
     const data = this.#schema.getMeta();
-    const indexes: IndexOptions[] = [];
+    const indexes: IndexDescription[] = [];
     for (const key in data) {
       const map: SchemaType = data[key];
       if (!map || Object.keys(map).length === 0 || !map.index) {
@@ -808,18 +848,21 @@ export class Model<T extends Document> {
         expires,
         ...otherParams
       } = map;
-      indexes.push({
-        expireAfterSeconds: expires,
+      const options: IndexDescription = {
         name: key + "_1",
         key: { [key]: index === "text" ? "text" : 1 },
         ...otherParams,
-      });
+      };
+      if (expires) {
+        options.expireAfterSeconds = expires;
+      }
+      indexes.push(options);
     }
 
     if (indexes.length > 0) {
-      await this.#collection.createIndexes({
+      await this.#collection.createIndexes(
         indexes,
-      });
+      );
     }
     if (injectedIndexes) {
       await this.#collection.createIndexes(injectedIndexes);

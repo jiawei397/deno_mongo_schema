@@ -1,40 +1,55 @@
 export {
-  Bson,
+  type AggregateOptions,
+  // type AggregatePipeline,
+  type BulkWriteOptions,
   Collection,
-  Database,
+  type CountOptions,
+  type CreateIndexesOptions,
+  Db as Database,
+  type DeleteOptions,
+  type DistinctOptions,
+  type Document,
+  type DropIndexesOptions,
+  type Filter,
+  type FindOneAndUpdateOptions,
+  type FindOptions,
+  type IndexDescription,
+  type InsertOneOptions,
   MongoClient as OriginalMongoClient,
-} from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-export { hasAtomicOperators } from "https://deno.land/x/mongo@v0.31.1/src/collection/collection.ts";
-export { WireProtocol } from "https://deno.land/x/mongo@v0.31.1/src/protocol/mod.ts";
-export { Cluster } from "https://deno.land/x/mongo@v0.31.1/src/cluster.ts";
-export type {
-  AggregateOptions,
-  AggregatePipeline,
-  BuildInfo,
-  ConnectOptions,
-  CountOptions,
-  CreateIndexOptions,
-  DeleteOptions,
-  DistinctOptions,
-  Document,
-  DropIndexOptions,
-  Filter,
-  FindAndModifyOptions,
-  FindOptions,
-  IndexOptions,
-  InsertDocument,
-  InsertOptions,
-  ListDatabaseInfo,
-  ObjectId,
-  UpdateFilter,
-  UpdateOptions,
-} from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-export {
-  MongoDriverError,
-  MongoError,
   MongoServerError,
-} from "https://deno.land/x/mongo@v0.31.1/src/error.ts";
-export { parse } from "https://deno.land/x/mongo@v0.31.1/src/utils/uri.ts";
+  type OptionalUnlessRequiredId,
+  type UpdateFilter,
+  type UpdateOptions,
+} from "npm:mongodb@4.13.0";
+export { ObjectId } from "npm:bson@4.7.0";
+// export type {
+//   // AggregateOptions,
+//   // AggregatePipeline,
+//   BuildInfo,
+//   ConnectOptions,
+//   // CountOptions,
+//   // CreateIndexOptions,
+//   // DeleteOptions,
+//   // DistinctOptions,
+//   // Document,
+//   // DropIndexOptions,
+//   // Filter,
+//   // FindAndModifyOptions,
+//   // FindOptions,
+//   IndexOptions,
+//   // InsertDocument,
+//   // InsertOptions,
+//   ListDatabaseInfo,
+//   // ObjectId,
+//   // UpdateFilter,
+//   // UpdateOptions,
+// } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
+// export {
+//   MongoDriverError,
+//   MongoError,
+//   MongoServerError,
+// } from "https://deno.land/x/mongo@v0.31.1/src/error.ts";
+// export { parse } from "https://deno.land/x/mongo@v0.31.1/src/utils/uri.ts";
 export {
   bgBlue,
   bgRgb24,

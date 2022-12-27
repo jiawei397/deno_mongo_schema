@@ -55,10 +55,10 @@ describe("SchemaFactory", () => {
 
 describe("MongoFactory", () => {
   it("getModel", async () => {
-    const model1 = await MongoFactory.getModel("user");
-    const model2 = await MongoFactory.getModel("users");
-    const model3 = await MongoFactory.getModel("User");
-    const model4 = await MongoFactory.getModel("Users");
+    const model1 = await MongoFactory.getModel<User>("user");
+    const model2 = await MongoFactory.getModel<User>("users");
+    const model3 = await MongoFactory.getModel<User>("User");
+    const model4 = await MongoFactory.getModel<User>("Users");
     const model5 = await MongoFactory.getModel(User);
     assert(model1);
     assert(model2);

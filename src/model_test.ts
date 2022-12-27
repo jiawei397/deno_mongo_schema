@@ -5,13 +5,10 @@ import {
   assertEquals,
   assertExists,
   assertNotEquals,
-  beforeEach,
-  describe,
-  it,
 } from "../test.deps.ts";
 import { User, UserSchema } from "../tests/common.ts";
 import { MongoHookMethod, UpdateExOptions } from "./types.ts";
-import { Bson, Document } from "../deps.ts";
+import { Document, ObjectId } from "../deps.ts";
 import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
 
 // if want to use other name, must use `SchemaFactory.createForClass` to register and use ` MongoFactory.getModel<User>("xxx")`
@@ -22,7 +19,7 @@ const userModel = await MongoFactory.getModel(User);
 @Schema()
 class Role extends BaseSchema {
   @Prop()
-  userId!: string | Bson.ObjectId;
+  userId!: string | ObjectId;
 
   @Prop()
   name!: string;
@@ -44,10 +41,10 @@ RoleSchema.virtual("user", {
 // SchemaFactory.register("mongo_test_schema_roles", Role);
 const roleModel = await MongoFactory.getModel(Role); // "mongo_test_schema_roles");
 
-describe("collection", () => {
-  beforeEach(() => {
-    UserSchema.clearHooks();
-  });
+Deno.test("collection", async (t) => {
+  // beforeEach(() => {
+  //   UserSchema.clearHooks();
+  // });
 
   const user1Data = {
     "name": "zhangsan",
@@ -59,9 +56,11 @@ describe("collection", () => {
   };
   let id = "";
   let id2 = "";
-  it("insert", async () => {
+  await t.step("insert", async () => {
+    UserSchema.clearHooks();
+
     id = await userModel.insertOne(user1Data).then((res: any) => {
-      assert(res instanceof Bson.ObjectId, "maybe mongoId");
+      assert(res instanceof ObjectId, "maybe mongoId");
       return res.toString();
     });
     assertEquals(typeof id, "string");
@@ -72,7 +71,9 @@ describe("collection", () => {
     assertEquals(typeof id2, "string");
   });
 
-  it("find", async () => {
+  await t.step("find", async () => {
+    UserSchema.clearHooks();
+
     assert(id, "id is not null");
 
     const inserted = "MongoHookMethod.find";
@@ -92,7 +93,8 @@ describe("collection", () => {
     assertEquals(doc["inserted"], inserted);
   });
 
-  it("update hooks", async () => {
+  await t.step("update hooks", async () => {
+    UserSchema.clearHooks();
     const update = {
       $set: {
         "name": "bb",
@@ -157,7 +159,9 @@ describe("collection", () => {
     }
   });
 
-  it("find many", async () => {
+  await t.step("find many", async () => {
+    UserSchema.clearHooks();
+
     const manyInserted = "MongoHookMethod.findMany";
     UserSchema.post(MongoHookMethod.findOne, function (_doc) {
       assert(false, "this will not be in");
@@ -185,7 +189,9 @@ describe("collection", () => {
     });
   });
 
-  it("find remainOriginId", async () => {
+  await t.step("find remainOriginId", async () => {
+    UserSchema.clearHooks();
+
     const arr = await userModel.findMany({
       _id: {
         $in: [id, id2],
@@ -198,7 +204,9 @@ describe("collection", () => {
     });
   });
 
-  it("find skip", async () => {
+  await t.step("find skip", async () => {
+    UserSchema.clearHooks();
+
     const arr = await userModel.findMany({
       _id: {
         $in: [id, id2],
@@ -215,7 +223,9 @@ describe("collection", () => {
     assertEquals((arr[0] as any).id, id);
   });
 
-  it("find sort", async () => {
+  await t.step("find sort", async () => {
+    UserSchema.clearHooks();
+
     const arr = await userModel.findMany({
       _id: {
         $in: [id, id2],
@@ -230,7 +240,9 @@ describe("collection", () => {
     assertEquals((arr[0] as any).id, id2);
   });
 
-  it("findByIdAndDelete", async () => {
+  await t.step("findByIdAndDelete", async () => {
+    UserSchema.clearHooks();
+
     const deleteResult = await userModel.findByIdAndDelete(id2);
     assertEquals(deleteResult, 1);
 
@@ -238,7 +250,9 @@ describe("collection", () => {
     assertEquals(deleteResult2, 1);
   });
 
-  it("createIndexes", async () => {
+  await t.step("createIndexes", async () => {
+    UserSchema.clearHooks();
+
     await userModel.createIndexes({
       indexes: [{
         name: "_name2",
@@ -257,7 +271,9 @@ describe("collection", () => {
     assertEquals(indexes[2].key, { name: -1 });
   });
 
-  it("syncIndexes", async () => {
+  await t.step("syncIndexes", async () => {
+    UserSchema.clearHooks();
+
     await userModel.syncIndexes();
 
     const indexes = await userModel.listIndexes().toArray();
@@ -269,14 +285,16 @@ describe("collection", () => {
     assertEquals(indexes[1].key, { name: 1 });
   });
 
-  it("delete all", async () => {
+  await t.step("delete all", async () => {
+    UserSchema.clearHooks();
+
     await userModel.deleteMany({});
     const nowArr = await userModel.find().toArray();
     assertEquals(nowArr.length, 0, "clear all");
   });
 });
 
-describe("populates", () => {
+Deno.test("populates", async (t) => {
   let userId1;
   let userId2;
   const user1 = {
@@ -287,7 +305,7 @@ describe("populates", () => {
     name: "lisi",
     age: 22,
   };
-  it("insertData", async () => {
+  await t.step("insertData", async () => {
     userId1 = await userModel.insertOne(user1);
     userId2 = await userModel.insertOne(user2);
 
@@ -304,7 +322,7 @@ describe("populates", () => {
     await roleModel.insertOne(role2);
   });
 
-  it("find populates is empty", async () => {
+  await t.step("find populates is empty", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {},
     });
@@ -313,7 +331,7 @@ describe("populates", () => {
     assertEquals(arr[1].user, undefined);
   });
 
-  it("find populates is object and pick some fields", async () => {
+  await t.step("find populates is object and pick some fields", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: {
@@ -335,7 +353,7 @@ describe("populates", () => {
     assertEquals(arr[1].user!._id, undefined);
   });
 
-  it("find populates is object and drop some fields", async () => {
+  await t.step("find populates is object and drop some fields", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: {
@@ -354,7 +372,7 @@ describe("populates", () => {
     assertExists(user.age);
   });
 
-  it("find populates is string and pick some fields", async () => {
+  await t.step("find populates is string and pick some fields", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: "name age",
@@ -368,7 +386,7 @@ describe("populates", () => {
     assertEquals(arr[1].user!._id, undefined);
   });
 
-  it("find populates is string and drop some fields", async () => {
+  await t.step("find populates is string and drop some fields", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: "-_id -name",
@@ -381,7 +399,7 @@ describe("populates", () => {
     assertExists(user.age);
   });
 
-  it("find populates is array and pick some fields", async () => {
+  await t.step("find populates is array and pick some fields", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: ["name", "age"],
@@ -395,7 +413,7 @@ describe("populates", () => {
     assertEquals(arr[1].user!._id, undefined);
   });
 
-  it("find populates is true", async () => {
+  await t.step("find populates is true", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: true,
@@ -415,7 +433,7 @@ describe("populates", () => {
     assert(user.id);
   });
 
-  it("find populates is false", async () => {
+  await t.step("find populates is false", async () => {
     const arr = await roleModel.findMany({}, {
       populates: {
         user: false,
@@ -426,7 +444,7 @@ describe("populates", () => {
     assert(!arr[1].user);
   });
 
-  it("find populate count", async () => {
+  await t.step("find populate count", async () => {
     RoleSchema.virtual("userCount", {
       ref: User,
       localField: "userId",
@@ -448,7 +466,7 @@ describe("populates", () => {
     RoleSchema.unVirtual("userCount");
   });
 
-  it("find populate count with match", async () => {
+  await t.step("find populate count with match", async () => {
     RoleSchema.virtual("userCount", {
       ref: User,
       localField: "userId",
@@ -473,70 +491,68 @@ describe("populates", () => {
   });
 });
 
-describe("Prop", () => {
-  it("default", async () => {
-    class Base extends BaseSchema {
-      @Prop({
-        default: "hello",
-      })
-      name?: string;
-    }
-    @Schema()
-    class Blog extends Base {
-      @Prop()
-      title!: string;
+Deno.test("Prop", async (t) => {
+  class Base extends BaseSchema {
+    @Prop({
+      default: "hello",
+    })
+    name?: string;
+  }
+  @Schema()
+  class Blog extends Base {
+    @Prop()
+    title!: string;
 
-      @Prop({
-        default: false,
-      })
-      deleted?: boolean;
+    @Prop({
+      default: false,
+    })
+    deleted?: boolean;
 
-      @Prop({
-        default: () => "function",
-      })
-      func?: string;
+    @Prop({
+      default: () => "function",
+    })
+    func?: string;
 
-      @Prop({
-        default: Date,
-      })
-      date?: Date;
-    }
-    const blogModel = await MongoFactory.getModel(Blog);
+    @Prop({
+      default: Date,
+    })
+    date?: Date;
+  }
+  const blogModel = await MongoFactory.getModel(Blog);
 
-    {
-      const id = await blogModel.insertOne({
-        title: "test",
-      });
-      assert(id);
-      const find = await blogModel.findById(id);
-      assert(find);
-      assertEquals(find.title, "test");
-      assertEquals(find.deleted, false);
-      assertEquals(find.func, "function");
-      assert(find.date instanceof Date);
-      assertEquals(find.name, "hello");
-    }
-
-    { // save
-      const data = await blogModel.save({
-        title: "test",
-      });
-      assert(data);
-      assert(data.id);
-      assertEquals(data.title, "test");
-      assertEquals(data.deleted, false);
-      assertEquals(data.func, "function");
-      assert(data.date instanceof Date);
-      assertEquals(data.name, "hello");
-    }
-
-    // clear
-    await blogModel.drop();
+  await t.step("default", async () => {
+    const id = await blogModel.insertOne({
+      title: "test",
+    });
+    assert(id);
+    const find = await blogModel.findById(id);
+    assert(find);
+    assertEquals(find.title, "test");
+    assertEquals(find.deleted, false);
+    assertEquals(find.func, "function");
+    assert(find.date instanceof Date);
+    assertEquals(find.name, "hello");
   });
+
+  await t.step("save", async () => {
+    const data = await blogModel.save({
+      title: "test",
+    });
+    assert(data);
+    assert(data.id);
+    assertEquals(data.title, "test");
+    assertEquals(data.deleted, false);
+    assertEquals(data.func, "function");
+    assert(data.date instanceof Date);
+    assertEquals(data.name, "hello");
+  });
+
+  // clear
+  await blogModel.drop();
 });
 
-describe("close", () => {
-  it("drop collection", async () => {
+Deno.test("close", async (t) => {
+  await t.step("drop collection", async () => {
     await userModel.drop();
     await roleModel.drop();
     assert(true, "drop collection ok");
