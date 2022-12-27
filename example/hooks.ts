@@ -9,8 +9,9 @@ import {
   UpdateExOptions,
 } from "../mod.ts";
 import type { Document } from "../mod.ts";
+import { dbUrl } from "../tests/common.ts";
 
-await MongoFactory.forRoot("mongodb://localhost:27017/test");
+await MongoFactory.forRoot(dbUrl);
 
 @Schema()
 class User extends BaseSchema {

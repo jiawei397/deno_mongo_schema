@@ -101,7 +101,7 @@ export class MongoClient {
     return this.#initedDBPromise;
   }
 
-  async getCollection<T = Document>(name: string) {
+  async getCollection<T extends Document>(name: string) {
     assert(this.#initedDBPromise);
     const db = await this.#initedDBPromise;
     const schema = SchemaFactory.getSchemaByName(name);
@@ -110,7 +110,7 @@ export class MongoClient {
     return this.getCollectionByDb<T>(db, modelName, schema);
   }
 
-  async getCollectionByDb<T>(
+  async getCollectionByDb<T extends Document>(
     db: Database,
     name: string,
     schema: SchemaHelper,

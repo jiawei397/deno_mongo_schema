@@ -1,10 +1,10 @@
 # deno_mongo_schema
 
-Extend from **[deno_mongo v0.29.4](https://deno.land/x/mongo)**, support Schema
+Extend from **[deno_mongo v0.31.1](https://deno.land/x/mongo)**, support Schema
 and extend some API.
 
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
-[![tag](https://img.shields.io/badge/deno-v1.19.0-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno-v1.29.0-green.svg)](https://github.com/denoland/deno)
 
 > Breaking changes when on v0.9.0, because I want to change the word
 > `SchemaDecorator` to `Schema`, and the word `Schema` changed to `BaseSchema`.

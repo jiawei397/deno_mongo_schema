@@ -2,6 +2,7 @@
 import {
   assert,
   blue,
+  Document,
   green,
   MongoServerError,
   Reflect,
@@ -38,10 +39,10 @@ export class MongoFactory {
   static getModel<T extends Constructor>(
     Cls: T,
   ): Promise<Model<InstanceType<T>>>;
-  static getModel<T>(
+  static getModel<T extends Document>(
     name: string,
   ): Promise<Model<T>>;
-  static getModel<T>(
+  static getModel<T extends Document>(
     name: string,
   ): Promise<Model<T>>;
   static getModel(modelNameOrCls: any) {
@@ -55,7 +56,7 @@ export class MongoFactory {
   }
 
   @Cache(-1)
-  private static async getModelByName<T>(
+  private static async getModelByName<T extends Document>(
     name: string,
   ): Promise<Model<T>> {
     assert(this.#initPromise, "must be inited");

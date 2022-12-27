@@ -51,7 +51,7 @@ export enum MongoHookMethod {
   findOneAndUpdate = "findOneAndUpdate",
 }
 
-export type MongoHookCallback<T = any> = (
+export type MongoHookCallback<T extends Document = any> = (
   this: Model<T>,
   ...args: any[]
 ) => void;

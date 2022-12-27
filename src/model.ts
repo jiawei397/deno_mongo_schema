@@ -38,7 +38,7 @@ import {
 } from "./types.ts";
 import { transToMongoId } from "./utils/tools.ts";
 
-export class Model<T> {
+export class Model<T extends Document> {
   #collection: Collection<T>;
 
   #schema: SchemaHelper;

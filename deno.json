@@ -1,0 +1,14 @@
+{
+  "version": "0.10.5",
+  "name": "deno_mongo_schema",
+  "compilerOptions": {
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
+  },
+  "tasks": {
+    "dev": "deno run -A --watch example/hooks.ts",
+    "test": "deno test -A --unstable",
+    "log": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
+  }
+}

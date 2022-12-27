@@ -6,8 +6,9 @@ import {
   Schema,
   SchemaFactory,
 } from "../mod.ts";
+import { dbUrl } from "../tests/common.ts";
 
-await MongoFactory.forRoot("mongodb://localhost:27017/test");
+await MongoFactory.forRoot(dbUrl);
 
 @Schema("user1")
 class User extends BaseSchema {
