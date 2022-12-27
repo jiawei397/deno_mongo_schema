@@ -1,17 +1,11 @@
 import { BaseSchema, getSchemaMetadata, Prop } from "./schema.ts";
-import {
-  assert,
-  assertEquals,
-  assertExists,
-  describe,
-  it,
-} from "../test.deps.ts";
+import { assert, assertEquals, assertExists } from "../test.deps.ts";
 import { User, UserSchema } from "../tests/common.ts";
 import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
 import { Bson } from "../deps.ts";
 
-describe("metadata", () => {
-  it("User meta", () => {
+Deno.test("metadata", async (t) => {
+  await t.step("User meta", () => {
     const userMeta = UserSchema.getMeta();
     assertEquals(userMeta.name, {
       required: true,
@@ -24,7 +18,7 @@ describe("metadata", () => {
     assertExists(userMeta.modifyTime);
   });
 
-  it("get User meta", () => {
+  await t.step("get User meta", () => {
     const ageMeta = getSchemaMetadata(User, "age");
     assertEquals(ageMeta, {
       required: false,
@@ -37,7 +31,7 @@ describe("metadata", () => {
     });
   });
 
-  it("extends", () => {
+  await t.step("extends", () => {
     @Schema()
     class A {
       @Prop({
@@ -71,7 +65,7 @@ describe("metadata", () => {
   });
 });
 
-describe("virtual", () => {
+Deno.test("virtual", async (t) => {
   const userSchemaName = "user_schema_test";
   const roleSchemaName = "role_schema_test";
   @Schema(userSchemaName)
@@ -95,7 +89,7 @@ describe("virtual", () => {
 
   const RoleSchema = SchemaFactory.createForClass(Role, roleSchemaName);
 
-  it("populate", async () => {
+  await t.step("populate", async () => {
     const roleModel = await MongoFactory.getModel<Role>(roleSchemaName);
     const userModel = await MongoFactory.getModel<User>(userSchemaName);
     const userData = {
