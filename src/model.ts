@@ -23,6 +23,7 @@ import {
 } from "../deps.ts";
 import {
   getFormattedModelName,
+  getSchemaInjectedIndexes,
   SchemaHelper,
   transferPopulateSelect,
 } from "./schema.ts";
@@ -790,6 +791,8 @@ export class Model<T extends Document> {
 
   async initModel() {
     assert(this.#schema, "schema is not defined");
+    console.log("this.#schema.Cls", this.#schema.Cls);
+    const injectedIndexes = getSchemaInjectedIndexes(this.#schema.Cls);
     const data = this.#schema.getMeta();
     const indexes: IndexOptions[] = [];
     for (const key in data) {
@@ -813,11 +816,14 @@ export class Model<T extends Document> {
       });
     }
 
-    if (indexes.length === 0) {
-      return;
+    if (indexes.length > 0) {
+      await this.#collection.createIndexes({
+        indexes,
+      });
     }
-    await this.#collection.createIndexes({
-      indexes,
-    });
+    console.log("----", injectedIndexes);
+    if (injectedIndexes) {
+      await this.#collection.createIndexes(injectedIndexes);
+    }
   }
 }

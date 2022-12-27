@@ -1,4 +1,10 @@
-import { BaseSchema, getSchemaMetadata, Prop } from "./schema.ts";
+import {
+  BaseSchema,
+  getSchemaInjectedIndexes,
+  getSchemaMetadata,
+  InjectIndexes,
+  Prop,
+} from "./schema.ts";
 import { assert, assertEquals, assertExists } from "../test.deps.ts";
 import { User, UserSchema } from "../tests/common.ts";
 import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
@@ -62,6 +68,36 @@ Deno.test("metadata", async (t) => {
         required: true,
       },
     });
+  });
+
+  await t.step("InjectIndexes", () => {
+    @Schema()
+    @InjectIndexes({
+      indexes: [{
+        key: {
+          name: 1,
+          age: -1,
+        },
+        name: "test",
+      }],
+    })
+    class A {
+      @Prop()
+      name: string;
+
+      @Prop()
+      age: number;
+    }
+
+    const options = getSchemaInjectedIndexes(A);
+    assert(options);
+    assertEquals(options.indexes, [{
+      key: {
+        name: 1,
+        age: -1,
+      },
+      name: "test",
+    }]);
   });
 });
 

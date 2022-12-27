@@ -7,6 +7,7 @@ import {
 } from "../mod.ts";
 
 export const dbUrl = "mongodb://localhost:27017/test";
+// export const dbUrl = "mongodb://10.100.30.65:27017/test";
 
 await MongoFactory.forRoot(dbUrl);
 

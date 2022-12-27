@@ -1,6 +1,7 @@
 // deno-lint-ignore-file no-unused-vars
 import {
   BaseSchema,
+  InjectIndexes,
   MongoFactory,
   Prop,
   Schema,
@@ -11,6 +12,15 @@ import { dbUrl } from "../tests/common.ts";
 await MongoFactory.forRoot(dbUrl);
 
 @Schema("user1")
+@InjectIndexes({
+  indexes: [{
+    key: {
+      group: 1,
+      title: 1,
+    },
+    name: "test",
+  }],
+})
 class User extends BaseSchema {
   @Prop()
   group!: string;
@@ -93,6 +103,6 @@ async function main() {
   );
 }
 
-// await init();
+await init();
 
 await main();

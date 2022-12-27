@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Bson, Reflect } from "../deps.ts";
+import { Bson, CreateIndexOptions, Reflect } from "../deps.ts";
 import {
   Constructor,
   Hooks,
@@ -14,6 +14,7 @@ import {
 } from "./types.ts";
 import { getInstance } from "./utils/tools.ts";
 const PROP_META_KEY = Symbol("design:prop");
+const INDEX_KEY = Symbol("design:index");
 const CREATED_AT_KEY = "createTime";
 const UPDATED_AT_KEY = "modifyTime";
 
@@ -206,6 +207,19 @@ export function addSchemaMetadata(
   props: any = {},
 ) {
   Reflect.defineMetadata(PROP_META_KEY, props, target, propertyKey);
+}
+
+export function InjectIndexes(options: CreateIndexOptions) {
+  return (target: Constructor) => {
+    Reflect.defineMetadata(INDEX_KEY, options, target);
+    return target;
+  };
+}
+
+export function getSchemaInjectedIndexes(
+  target: Target,
+): CreateIndexOptions | undefined {
+  return Reflect.getMetadata(INDEX_KEY, target);
 }
 
 const schemaPropsCaches = new Map();

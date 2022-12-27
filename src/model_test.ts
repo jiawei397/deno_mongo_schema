@@ -111,7 +111,10 @@ describe("collection", () => {
         _options?: UpdateExOptions,
       ) {
         assert(this === userModel, "this is userModel");
-        assertExists(filter._id, "只测试findByIdAndUpdate，这时条件里肯定有_id");
+        assertExists(
+          filter._id,
+          "只测试findByIdAndUpdate，这时条件里肯定有_id",
+        );
         assertEquals(doc, update);
       },
     );
