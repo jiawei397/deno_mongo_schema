@@ -821,7 +821,6 @@ export class Model<T extends Document> {
         indexes,
       });
     }
-    console.log("----", injectedIndexes);
     if (injectedIndexes) {
       await this.#collection.createIndexes(injectedIndexes);
     }
