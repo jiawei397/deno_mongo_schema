@@ -23,7 +23,7 @@ jobs:
       - name: Install Deno
         uses: denolib/setup-deno@master
         with:
-          deno-version: 1.x.x
+          deno-version: 1.29.x
 
       - name: Log versions
         run: |
@@ -40,4 +40,4 @@ jobs:
 
       # Tests
       - name: Test TS
-        run: deno test -A --unstable --config tsconfig.json
+        run: deno task test
