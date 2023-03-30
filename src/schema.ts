@@ -58,7 +58,14 @@ export class BaseSchema {
   id?: string; // default id
 }
 
-export type RequiredId<T extends BaseSchema> = RequiredKeys<
+export interface SchemaWithOptionId {
+  _id?: Bson.ObjectId | string; // default id
+  id?: string; // default id
+}
+
+export type RequiredId<
+  T extends SchemaWithOptionId,
+> = RequiredKeys<
   T,
   "id" | "_id"
 >;
