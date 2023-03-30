@@ -792,7 +792,6 @@ export class Model<T extends Document> {
 
   async initModel() {
     assert(this.#schema, "schema is not defined");
-    console.log("this.#schema.Cls", this.#schema.Cls);
     const injectedIndexes = getSchemaInjectedIndexes(this.#schema.Cls);
     const data = this.#schema.getMeta();
     const indexes: IndexOptions[] = [];
