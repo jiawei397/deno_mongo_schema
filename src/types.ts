@@ -162,3 +162,8 @@ export type UpdateOneResult = {
   matchedCount: number;
   modifiedCount: number;
 };
+
+/** set some keys be required */
+export type RequiredKeys<T, U extends keyof T> =
+  & Required<Pick<T, U>>
+  & Omit<T, U>;

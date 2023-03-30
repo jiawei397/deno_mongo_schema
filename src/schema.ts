@@ -7,6 +7,7 @@ import {
   MongoHookMethod,
   PopulateSelect,
   RealPopulateSelect,
+  RequiredKeys,
   SchemaType,
   Target,
   TargetInstance,
@@ -56,6 +57,11 @@ export class BaseSchema {
   _id?: Bson.ObjectId | string; // default id
   id?: string; // default id
 }
+
+export type RequiredId<T extends BaseSchema> = RequiredKeys<
+  T,
+  "id" | "_id"
+>;
 
 export class SchemaHelper {
   Cls: Constructor;

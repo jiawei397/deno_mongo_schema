@@ -24,6 +24,7 @@ import {
 import {
   getFormattedModelName,
   getSchemaInjectedIndexes,
+  RequiredId,
   SchemaHelper,
   transferPopulateSelect,
 } from "./schema.ts";
@@ -249,7 +250,7 @@ export class Model<T extends Document> {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
     await this.afterFind(doc, filter, options);
-    return doc as Required<T> | null;
+    return doc as RequiredId<T> | null;
   }
 
   async findMany(
@@ -259,7 +260,7 @@ export class Model<T extends Document> {
     await this.preFind(MongoHookMethod.findMany, filter, options);
     const docs = await this._find(filter, options).toArray();
     await this.afterFind(docs, filter, options);
-    return docs as Required<T>[];
+    return docs as RequiredId<T>[];
   }
 
   private formatFindDoc(doc: any, options?: FindExOptions) {
@@ -589,7 +590,7 @@ export class Model<T extends Document> {
       fields: options?.fields,
     });
     await this.afterFindOneAndUpdate(updatedDoc, options);
-    return updatedDoc as Required<T> | null;
+    return updatedDoc as RequiredId<T> | null;
   }
 
   /**

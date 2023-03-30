@@ -33,4 +33,6 @@ const res3 = await model.findOneAndUpdate({
   new: true,
   upsert: true,
 });
-console.log(res3);
+if (res3) {
+  console.log(res3);
+}
