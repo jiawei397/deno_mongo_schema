@@ -163,7 +163,12 @@ export type UpdateOneResult = {
   modifiedCount: number;
 };
 
+export type Simplify<T> = {
+  [P in keyof T]: T[P];
+};
+
 /** set some keys be required */
-export type RequiredKeys<T, U extends keyof T> =
+export type RequiredKeys<T, U extends keyof T> = Simplify<
   & Required<Pick<T, U>>
-  & Omit<T, U>;
+  & Omit<T, U>
+>;
