@@ -9,13 +9,4 @@ export {
 
 export const test = Deno.test;
 
-export {
-  afterAll,
-  afterEach,
-  // test,
-  beforeAll,
-  beforeEach,
-  describe,
-  it,
-  TestSuite,
-} from "https://deno.land/x/test_suite@0.9.1/mod.ts";
+export { nanoid } from "https://deno.land/x/nanoid@v3.0.0/mod.ts";

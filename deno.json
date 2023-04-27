@@ -8,7 +8,7 @@
   },
   "tasks": {
     "dev": "deno run -A --watch example/hooks.ts",
-    "test": "deno test -A --unstable",
+    "test": "deno test -A",
     "log": "conventional-changelog -p angular -i CHANGELOG.md -s -r 0"
   }
 }

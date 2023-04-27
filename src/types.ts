@@ -1,12 +1,15 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import {
-  Bson,
   Document,
   Filter,
-  FindAndModifyOptions,
+  // FindAndModifyOptions,
+  FindOneAndUpdateOptions,
   FindOptions,
-  IndexOptions,
-  InsertOptions,
+  IndexDescription,
+  // IndexOptions,
+  InsertOneOptions,
+  // InsertOptions,
+  ObjectId,
   UpdateOptions,
 } from "../deps.ts";
 import { Model } from "./model.ts";
@@ -27,12 +30,11 @@ export type FindExOptions = FindOptions & {
   populates?: Record<string, PopulateSelect>;
 } & ExOptions;
 
-export type InsertExOptions = InsertOptions & ExOptions;
+export type InsertExOptions = InsertOneOptions & ExOptions;
 
-export interface FindAndUpdateExOptions extends FindAndModifyOptions {
-  /** @deprecated Please drop it soon */
-  useFindAndModify?: boolean;
+export interface FindAndUpdateExOptions extends FindOneAndUpdateOptions {
   remainOriginId?: boolean;
+  new?: boolean;
 }
 
 export interface UpdateExOptions extends UpdateOptions {
@@ -58,7 +60,7 @@ export type MongoHookCallback<T extends Document = any> = (
 
 export type Hooks = Map<MongoHookMethod, MongoHookCallback<any>[]>;
 
-export interface SchemaType extends Partial<IndexOptions> {
+export interface SchemaType extends Partial<IndexDescription> {
   index?: boolean | "text";
 
   /**
@@ -157,7 +159,7 @@ export interface VirtualType {
 }
 
 export type UpdateOneResult = {
-  upsertedId: Bson.ObjectId;
+  upsertedId: ObjectId;
   upsertedCount: number;
   matchedCount: number;
   modifiedCount: number;

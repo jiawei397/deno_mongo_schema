@@ -13,22 +13,28 @@ import { Model } from "./model.ts";
 import { getFormattedModelName, SchemaHelper } from "./schema.ts";
 import { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
-import { Cache } from "./utils/cache.ts";
+import { Cache, clearCacheTimeout } from "./utils/cache.ts";
 
 export class MongoFactory {
   static #client: MongoClient | undefined;
   static #initPromise: Promise<any> | undefined;
 
   static get client() {
-    if (!this.#client) {
-      this.#client = new MongoClient();
-    }
     return this.#client;
   }
 
   static forRoot(url: string) {
-    this.#initPromise = this.client.initDB(url);
+    this.#client = new MongoClient(url);
+    this.#initPromise = this.#client.initDB(url);
+    // this.#initPromise = this.#client.connect();
     return this.#initPromise;
+  }
+
+  static async close() {
+    clearCacheTimeout();
+    await this.#client?.close(true);
+    this.#client = undefined;
+    this.#initPromise = undefined;
   }
 
   /**
@@ -59,9 +65,9 @@ export class MongoFactory {
   private static async getModelByName<T extends Document>(
     name: string,
   ): Promise<Model<T>> {
-    assert(this.#initPromise, "must be inited");
+    assert(this.client, "must be inited");
     await this.#initPromise;
-    const model = await this.client.getCollection<T>(name);
+    const model = await this.client.getCollection(name);
     try {
       await model.initModel();
     } catch (e) {
@@ -84,7 +90,7 @@ export class MongoFactory {
       }
     }
     console.log(`${yellow("Schema")} [${green(name)}] ${blue("init ok")}`);
-    return model;
+    return model as unknown as Model<T>;
   }
 }
 

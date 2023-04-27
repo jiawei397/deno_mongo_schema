@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import { Bson, CreateIndexOptions, Reflect } from "../deps.ts";
+import { IndexDescription, ObjectId, Reflect } from "../deps.ts";
 import {
   Constructor,
   Hooks,
@@ -54,7 +54,7 @@ export class BaseSchema {
   @SetUpdatedAt()
   modifyTime?: Date;
 
-  _id?: Bson.ObjectId | string; // default id
+  _id?: ObjectId | string; // default id
   id?: string; // default id
 }
 
@@ -222,7 +222,7 @@ export function addSchemaMetadata(
   Reflect.defineMetadata(PROP_META_KEY, props, target, propertyKey);
 }
 
-export function InjectIndexes(options: CreateIndexOptions) {
+export function InjectIndexes(options: IndexDescription[]) {
   return (target: Constructor) => {
     Reflect.defineMetadata(INDEX_KEY, options, target);
     return target;
@@ -231,7 +231,7 @@ export function InjectIndexes(options: CreateIndexOptions) {
 
 export function getSchemaInjectedIndexes(
   target: Target,
-): CreateIndexOptions | undefined {
+): IndexDescription[] | undefined {
   return Reflect.getMetadata(INDEX_KEY, target);
 }
 
@@ -240,7 +240,7 @@ const schemaPropsCaches = new Map();
 export function getSchemaMetadata(
   target: Target,
   propertyKey?: string,
-) {
+): Record<string, any> {
   const instance = getInstance(target);
   if (propertyKey) {
     return Reflect.getMetadata(PROP_META_KEY, instance, propertyKey);

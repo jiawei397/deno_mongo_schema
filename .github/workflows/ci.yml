@@ -23,7 +23,7 @@ jobs:
       - name: Install Deno
         uses: denolib/setup-deno@master
         with:
-          deno-version: 1.29.x
+          deno-version: 1.32.x
 
       - name: Log versions
         run: |
@@ -39,5 +39,7 @@ jobs:
           mongoDBVersion: ${{ matrix.mongo }}
 
       # Tests
-      - name: Test TS
+      - name: Test Mongodb
+        env:
+          BASE_URL: mongodb://localhost:27017/test
         run: deno task test

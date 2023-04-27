@@ -9,25 +9,25 @@ export * from "./src/schema.ts";
 
 export * from "./src/factory.ts";
 
-export { Bson, Database } from "./deps.ts";
+export { Database } from "./deps.ts";
 export type {
   AggregateOptions,
-  AggregatePipeline,
-  BuildInfo,
-  ConnectOptions,
+  // AggregatePipeline,
+  // BuildInfo,
+  // ConnectOptions,
   CountOptions,
-  CreateIndexOptions,
+  // CreateIndexOptions,
   DeleteOptions,
   DistinctOptions,
   Document,
-  DropIndexOptions,
+  // DropIndexOptions,
   Filter,
-  FindAndModifyOptions,
+  // FindAndModifyOptions,
   FindOptions,
-  IndexOptions,
-  InsertDocument,
-  InsertOptions,
-  ListDatabaseInfo,
+  // IndexOptions,
+  // InsertDocument,
+  // InsertOptions,
+  // ListDatabaseInfo,
   UpdateFilter,
   UpdateOptions,
 } from "./deps.ts";

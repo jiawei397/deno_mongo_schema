@@ -52,6 +52,8 @@ UserSchema.post(MongoHookMethod.findOneAndUpdate, function (doc: any) {
 
 const model = await MongoFactory.getModel(User);
 
+await model.deleteMany({});
+
 const id = await model.insertOne({
   "name": "zhangsan",
   "age": 18,
@@ -73,35 +75,35 @@ const info = await model.findById(id, {
     name: 1,
   },
 });
-console.log(info);
+console.log("info: ", info);
 
 UserSchema.post(MongoHookMethod.findMany, function (doc: any) {
   console.log("----post---findMany----", doc);
 });
 
 const arr = await model.findMany({});
-console.log(arr);
+console.log("findMany: ", arr);
 
 UserSchema.post(MongoHookMethod.delete, function (doc: any) {
   console.log("----post---delete----", doc);
 });
 
-const del = await model.deleteOne({
-  name: "zhangsan",
-});
-console.log(del);
+// const del = await model.deleteOne({
+//   name: "zhangsan",
+// });
+// console.log(del);
 
-const delMulti = await model.deleteMany({
-  name: "zhangsan",
-});
-console.log(delMulti);
+// const delMulti = await model.deleteMany({
+//   name: "zhangsan",
+// });
+// console.log(delMulti);
 
-const res = await model.findByIdAndUpdate(id, {
-  $set: {
-    name: "lisi",
-  },
-});
-console.log(res);
+// const res = await model.findByIdAndUpdate(id, {
+//   $set: {
+//     name: "lisi",
+//   },
+// });
+// console.log("lisi", res);
 
 const res2 = await model.findByIdAndUpdate(id, {
   $set: {
@@ -110,7 +112,7 @@ const res2 = await model.findByIdAndUpdate(id, {
 }, {
   new: true,
 });
-console.log(res2);
+console.log("lisi2", res2?.id, res2?.name);
 
 const res3 = await model.findOneAndUpdate({
   name: "lisi2",
@@ -121,4 +123,4 @@ const res3 = await model.findOneAndUpdate({
 }, {
   new: true,
 });
-console.log(res3);
+console.log("res3", res3);

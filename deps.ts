@@ -1,40 +1,27 @@
 export {
-  Bson,
+  type AggregateOptions,
+  type BulkWriteOptions,
   Collection,
-  Database,
+  type CountOptions,
+  type CreateIndexesOptions,
+  Db as Database,
+  type DeleteOptions,
+  type DistinctOptions,
+  type Document,
+  type DropIndexesOptions,
+  type Filter,
+  type FindOneAndUpdateOptions,
+  type FindOptions,
+  type IndexDescription,
+  type InsertOneOptions,
   MongoClient as OriginalMongoClient,
-} from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-export { hasAtomicOperators } from "https://deno.land/x/mongo@v0.31.1/src/collection/collection.ts";
-export { WireProtocol } from "https://deno.land/x/mongo@v0.31.1/src/protocol/mod.ts";
-export { Cluster } from "https://deno.land/x/mongo@v0.31.1/src/cluster.ts";
-export type {
-  AggregateOptions,
-  AggregatePipeline,
-  BuildInfo,
-  ConnectOptions,
-  CountOptions,
-  CreateIndexOptions,
-  DeleteOptions,
-  DistinctOptions,
-  Document,
-  DropIndexOptions,
-  Filter,
-  FindAndModifyOptions,
-  FindOptions,
-  IndexOptions,
-  InsertDocument,
-  InsertOptions,
-  ListDatabaseInfo,
-  ObjectId,
-  UpdateFilter,
-  UpdateOptions,
-} from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-export {
-  MongoDriverError,
-  MongoError,
   MongoServerError,
-} from "https://deno.land/x/mongo@v0.31.1/src/error.ts";
-export { parse } from "https://deno.land/x/mongo@v0.31.1/src/utils/uri.ts";
+  ObjectId,
+  type OptionalUnlessRequiredId,
+  type UpdateFilter,
+  type UpdateOptions,
+  type WithId,
+} from "npm:mongodb@5.3.0";
 export {
   bgBlue,
   bgRgb24,
@@ -47,10 +34,10 @@ export {
   rgb24,
   rgb8,
   yellow,
-} from "https://deno.land/std@0.97.0/fmt/colors.ts";
+} from "https://deno.land/std@0.184.0/fmt/colors.ts";
 export {
   assert,
   assertEquals,
-} from "https://deno.land/std@0.107.0/testing/asserts.ts";
+} from "https://deno.land/std@0.184.0/testing/asserts.ts";
 
 export { Reflect } from "https://deno.land/x/deno_reflect@v0.2.1/mod.ts";
