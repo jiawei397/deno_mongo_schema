@@ -1,6 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
 import {
-  DeleteOptions,
   Document,
   Filter,
   // FindAndModifyOptions,

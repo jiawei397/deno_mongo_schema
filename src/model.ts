@@ -23,6 +23,7 @@ import {
   ObjectId,
   OptionalUnlessRequiredId,
   UpdateFilter,
+  WithId,
   yellow,
 } from "../deps.ts";
 import {
@@ -568,7 +569,7 @@ export class Model<T extends Document> {
     update: UpdateFilter<T>,
     options?: FindAndUpdateExOptions,
   ) {
-    const filter = {
+    const filter: WithId<T> = {
       _id: transToMongoId(id),
     };
     if (options) {
@@ -577,11 +578,11 @@ export class Model<T extends Document> {
     return this.findOneAndUpdate(filter, update);
   }
 
-  findById(
+  findById<T>(
     id: string | ObjectId,
     options?: FindExOptions,
   ) {
-    const filter = {
+    const filter: WithId<T> = {
       _id: transToMongoId(id),
     };
     return this.findOne(filter, options);
@@ -593,6 +594,9 @@ export class Model<T extends Document> {
     options: FindAndUpdateExOptions = {},
   ) {
     await this.preFindOneAndUpdate(filter, update, options);
+    if (options.new) {
+      options.returnDocument = "after";
+    }
     const updatedDoc = await this.#collection.findOneAndUpdate(
       filter,
       update,

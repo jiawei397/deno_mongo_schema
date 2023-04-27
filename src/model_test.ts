@@ -199,6 +199,7 @@ Deno.test("collection", async (t) => {
     }, {
       remainOriginId: true,
     });
+    assert(arr.length > 0);
     arr.forEach((doc: any) => {
       assertExists(doc._id, "this time _id will be remained");
     });

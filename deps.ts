@@ -20,8 +20,9 @@ export {
   type OptionalUnlessRequiredId,
   type UpdateFilter,
   type UpdateOptions,
-} from "npm:mongodb@4.13.0";
-export { ObjectId } from "npm:bson@4.7.0";
+  type WithId,
+} from "npm:mongodb@5.3.0";
+export { ObjectId } from "npm:bson@5.2.0";
 // export type {
 //   // AggregateOptions,
 //   // AggregatePipeline,
@@ -62,10 +63,10 @@ export {
   rgb24,
   rgb8,
   yellow,
-} from "https://deno.land/std@0.97.0/fmt/colors.ts";
+} from "https://deno.land/std@0.184.0/fmt/colors.ts";
 export {
   assert,
   assertEquals,
-} from "https://deno.land/std@0.107.0/testing/asserts.ts";
+} from "https://deno.land/std@0.184.0/testing/asserts.ts";
 
 export { Reflect } from "https://deno.land/x/deno_reflect@v0.2.1/mod.ts";

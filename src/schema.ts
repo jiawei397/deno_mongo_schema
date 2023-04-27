@@ -1,10 +1,5 @@
 // deno-lint-ignore-file no-explicit-any
-import {
-  CreateIndexesOptions,
-  IndexDescription,
-  ObjectId,
-  Reflect,
-} from "../deps.ts";
+import { IndexDescription, ObjectId, Reflect } from "../deps.ts";
 import {
   Constructor,
   Hooks,
@@ -233,21 +228,20 @@ export function getSchemaMetadata(
   target: Target,
   propertyKey?: string,
 ): Record<string, any> {
-  return {};
-  // const instance = getInstance(target);
-  // // if (propertyKey) {
-  // //   return Reflect.getMetadata(PROP_META_KEY, instance, propertyKey);
-  // // }
-  // let map: Record<string, any> = schemaPropsCaches.get(target);
-  // if (!map) {
-  //   map = {};
-  //   // Object.keys(instance).forEach((key) => {
-  //   //   const meta = Reflect.getMetadata(PROP_META_KEY, instance, key);
-  //   //   if (meta !== undefined) {
-  //   //     map[key] = meta;
-  //   //   }
-  //   // });
-  //   // schemaPropsCaches.set(target, map);
-  // }
-  // return map;
+  const instance = getInstance(target);
+  if (propertyKey) {
+    return Reflect.getMetadata(PROP_META_KEY, instance, propertyKey);
+  }
+  let map: Record<string, any> = schemaPropsCaches.get(target);
+  if (!map) {
+    map = {};
+    Object.keys(instance).forEach((key) => {
+      const meta = Reflect.getMetadata(PROP_META_KEY, instance, key);
+      if (meta !== undefined) {
+        map[key] = meta;
+      }
+    });
+    schemaPropsCaches.set(target, map);
+  }
+  return map;
 }
