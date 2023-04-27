@@ -24,6 +24,7 @@ export type {
   Filter,
   // FindAndModifyOptions,
   FindOptions,
+  ObjectId,
   // IndexOptions,
   // InsertDocument,
   // InsertOptions,
