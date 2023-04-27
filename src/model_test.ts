@@ -5,14 +5,12 @@ import {
   assertEquals,
   assertExists,
   assertNotEquals,
+  nanoid,
 } from "../test.deps.ts";
 import { close, connect, User, UserSchema } from "../tests/common.ts";
 import { MongoHookMethod, UpdateExOptions } from "./types.ts";
 import { Document, ObjectId } from "../deps.ts";
 import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
-
-// if want to use other name, must use `SchemaFactory.createForClass` to register and use ` MongoFactory.getModel<User>("xxx")`
-// SchemaFactory.createForClass(User, "mongo_test_schema_users");
 
 @Schema()
 class Role extends BaseSchema {
@@ -62,18 +60,44 @@ Deno.test({
         assert(res instanceof ObjectId, "maybe mongoId");
         return res.toString();
       });
+      assert(id);
       assertEquals(typeof id, "string");
 
       id2 = await userModel.insertOne(user2Data).then((res: any) =>
         res.toString()
       );
+      assert(id2);
       assertEquals(typeof id2, "string");
+    });
+
+    await t.step("findById", async (t) => {
+      await t.step("default", async () => {
+        const doc = await userModel.findById(id);
+        assert(doc);
+        assertEquals(doc.name, user1Data.name);
+        assertEquals(doc.age, user1Data.age);
+        assert(!doc._id, "default _id be dropped");
+        assertEquals(doc.id, id);
+        assertExists(doc.createTime);
+        assertExists(doc.modifyTime);
+      });
+
+      await t.step("with options", async () => {
+        const doc = await userModel.findById(id, {
+          remainOriginId: true,
+        });
+        assert(doc);
+        assertEquals(doc.name, user1Data.name);
+        assertEquals(doc.age, user1Data.age);
+        assert(doc._id, "id will be remained");
+        assertEquals(doc.id, id);
+        assertExists(doc.createTime);
+        assertExists(doc.modifyTime);
+      });
     });
 
     await t.step("find", async () => {
       UserSchema.clearHooks();
-
-      assert(id, "id is not null");
 
       const inserted = "MongoHookMethod.find";
       UserSchema.post(MongoHookMethod.findOne, function (doc: any) {
@@ -87,9 +111,9 @@ Deno.test({
         assert(false, "this will not be in");
       });
 
-      const doc: any = await userModel.findById(id);
-      assertNotEquals(doc, null, "doc must not be null");
-      assertEquals(doc["inserted"], inserted);
+      const doc = await userModel.findById(id);
+      assert(doc);
+      assertEquals((doc as any)["inserted"], inserted);
     });
 
     await t.step("update hooks", async () => {
@@ -223,14 +247,14 @@ Deno.test({
       assertEquals((arr[0] as any).id, id2);
     });
 
-    await t.step("findByIdAndUpdate", async () => {
+    await t.step("findByIdAndUpdate", async (t) => {
       UserSchema.clearHooks();
 
       const user = await userModel.findById(id2);
       const originName = user!.name;
 
-      {
-        const randomName = Math.random().toString();
+      await t.step("default", async () => {
+        const randomName = nanoid();
         const result = await userModel.findByIdAndUpdate(id2, {
           name: randomName,
         });
@@ -240,10 +264,10 @@ Deno.test({
         assert(result._id instanceof ObjectId);
         assertEquals(result._id.toString(), id2);
         assertEquals(result.name, originName, "default not return new value");
-      }
+      });
 
-      { // test new
-        const randomName = Math.random().toString();
+      await t.step("test new", async () => {
+        const randomName = nanoid();
         const result = await userModel.findByIdAndUpdate(id2, {
           name: randomName,
         }, {
@@ -254,10 +278,10 @@ Deno.test({
         assert(!result._id);
         assertEquals(result.name, randomName);
         assertEquals(result.id, id2);
-      }
+      });
 
-      { // test reamainOriginId
-        const randomName = Math.random().toString();
+      await t.step("test remainOriginId", async () => {
+        const randomName = nanoid();
         const result = await userModel.findByIdAndUpdate(id2, {
           name: randomName,
         }, {
@@ -271,9 +295,9 @@ Deno.test({
         assertEquals(result.id, id2);
         assert(result._id instanceof ObjectId);
         assertEquals(result._id.toString(), id2);
-      }
+      });
 
-      { // origin data
+      await t.step("return origin data", async () => {
         const user = await userModel.findById(id2);
         assert(user);
         const update = {
@@ -288,9 +312,9 @@ Deno.test({
         assertEquals(res.name, user.name);
         assertEquals(res.age, user.age);
         assertEquals((res as any).sex, undefined);
-      }
+      });
 
-      {
+      await t.step("return new data", async () => {
         const update = {
           $set: {
             "name": "bb",
@@ -305,9 +329,9 @@ Deno.test({
         assertEquals(res.name, update.$set.name);
         assertEquals(res.age, update.$set.age);
         assertEquals((res as any).sex, undefined, "extra key will be droped");
-      }
+      });
 
-      {
+      await t.step("no $set", async () => {
         const update = {
           "name": "bb",
           "age": 222,
@@ -324,17 +348,76 @@ Deno.test({
         assertEquals(res.name, cloned.name);
         assertEquals(res.age, cloned.age);
         assertEquals((res as any).sex, undefined, "extra key will be droped");
-      }
+      });
     });
 
-    await t.step("findByIdAndDelete", async () => {
-      UserSchema.clearHooks();
+    await t.step("findOneAndUpdate", async (t) => {
+      const name = "wangwu";
+      await t.step("upsert", async () => {
+        const randomName = nanoid();
+        const res = await userModel.findOneAndUpdate({
+          name: randomName,
+        }, {
+          name,
+        }, {
+          new: true,
+          upsert: true,
+        });
+        assert(res);
+        assertEquals(res.name, name);
 
-      const deleteResult = await userModel.findByIdAndDelete(id2);
-      assertEquals(deleteResult, 1);
+        const count = await userModel.countDocuments({
+          name,
+        });
+        assert(count >= 1);
+      });
 
-      const deleteResult2 = await userModel.findByIdAndDelete(id);
-      assertEquals(deleteResult2, 1);
+      await t.step("upsert with $set", async () => {
+        const randomName = nanoid();
+        const res = await userModel.findOneAndUpdate({
+          name: randomName,
+        }, {
+          $set: {
+            name,
+          },
+        }, {
+          new: true,
+          upsert: true,
+        });
+        assert(res);
+        assertEquals(res.name, name);
+
+        const count = await userModel.countDocuments({
+          name,
+        });
+        assert(count >= 2);
+      });
+
+      await t.step("update one exist", async () => {
+        const randomName = nanoid();
+        const count = await userModel.countDocuments({
+          name,
+        });
+        assert(count >= 2);
+
+        const res = await userModel.findOneAndUpdate({
+          name: name,
+        }, {
+          $set: {
+            name: randomName,
+          },
+        }, {
+          new: true,
+          upsert: true,
+        });
+        assert(res);
+        assertEquals(res.name, randomName);
+
+        const count2 = await userModel.countDocuments({
+          name,
+        });
+        assertEquals(count, count2 + 1, "may changed one");
+      });
     });
 
     await t.step("createIndexes", async () => {
@@ -372,12 +455,64 @@ Deno.test({
       assertEquals(indexes[1].key, { name: 1 });
     });
 
-    await t.step("delete all", async () => {
+    await t.step("findByIdAndDelete", async () => {
       UserSchema.clearHooks();
 
-      await userModel.deleteMany({});
-      const nowArr = await userModel.find().toArray();
-      assertEquals(nowArr.length, 0, "clear all");
+      const deleteResult = await userModel.findByIdAndDelete(id2);
+      assertEquals(deleteResult, 1);
+
+      const deleteResult2 = await userModel.findByIdAndDelete(id);
+      assertEquals(deleteResult2, 1);
+    });
+
+    await t.step("insert and delete", async (t) => {
+      UserSchema.clearHooks();
+      const name = nanoid();
+      const originCount = 5;
+
+      await t.step("insert many", async () => {
+        const users = new Array(5).fill(1).map((_, index) => ({
+          name,
+          age: index,
+        }));
+        await userModel.insertMany(users);
+      });
+
+      await t.step("count", async () => {
+        const count = await userModel.countDocuments({
+          name,
+        });
+        assertEquals(count, originCount);
+      });
+
+      await t.step("delete one", async () => {
+        await userModel.deleteOne({
+          name,
+        });
+        const count2 = await userModel.countDocuments({
+          name,
+        });
+        assertEquals(count2, originCount - 1);
+      });
+
+      await t.step("delete many", async () => {
+        await userModel.deleteMany({
+          name,
+        });
+        const count2 = await userModel.countDocuments({
+          name,
+        });
+        assertEquals(count2, 0);
+      });
+
+      await t.step("delete all", async () => {
+        const allCount = await userModel.countDocuments();
+        assert(allCount > 0);
+
+        await userModel.deleteMany({});
+        const allCount2 = await userModel.countDocuments();
+        assertEquals(allCount2, 0, "clear all");
+      });
     });
 
     // clear
