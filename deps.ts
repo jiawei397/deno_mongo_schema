@@ -17,12 +17,13 @@ export {
   type InsertOneOptions,
   MongoClient as OriginalMongoClient,
   MongoServerError,
+  ObjectId,
   type OptionalUnlessRequiredId,
   type UpdateFilter,
   type UpdateOptions,
   type WithId,
 } from "npm:mongodb@5.3.0";
-export { ObjectId } from "npm:bson@5.2.0";
+// export { ObjectId } from "npm:bson@5.2.0";
 // export type {
 //   // AggregateOptions,
 //   // AggregatePipeline,
