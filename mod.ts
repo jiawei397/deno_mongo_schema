@@ -9,7 +9,7 @@ export * from "./src/schema.ts";
 
 export * from "./src/factory.ts";
 
-export { Database } from "./deps.ts";
+export { Database, ObjectId } from "./deps.ts";
 export type {
   AggregateOptions,
   // AggregatePipeline,
@@ -24,7 +24,6 @@ export type {
   Filter,
   // FindAndModifyOptions,
   FindOptions,
-  ObjectId,
   // IndexOptions,
   // InsertDocument,
   // InsertOptions,
