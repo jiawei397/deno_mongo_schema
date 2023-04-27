@@ -59,7 +59,7 @@ export class BaseSchema {
 }
 
 export interface SchemaWithOptionId {
-  _id?: Bson.ObjectId | string; // default id
+  _id?: ObjectId | string; // default id
   id?: string; // default id
 }
 
