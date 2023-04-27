@@ -7,7 +7,8 @@ import {
 } from "../mod.ts";
 
 // export const dbUrl = "mongodb://localhost:27017/test";
-export const dbUrl = "mongodb://192.168.21.176:27018/test";
+export const dbUrl = Deno.env.get("BASE_URL") ||
+  "mongodb://192.168.21.176:27018/test";
 
 @Schema()
 export class User extends BaseSchema {

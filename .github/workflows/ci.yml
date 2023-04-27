@@ -39,5 +39,7 @@ jobs:
           mongoDBVersion: ${{ matrix.mongo }}
 
       # Tests
-      - name: Test TS
+      - name: Test Mongodb
+        env:
+          BASE_URL: mongodb://localhost:27017/test
         run: deno task test
