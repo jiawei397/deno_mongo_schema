@@ -29,6 +29,7 @@ export function connect() {
   return MongoFactory.forRoot(dbUrl);
 }
 
-export function close() {
-  return MongoFactory.close();
+export async function close() {
+  await MongoFactory.close();
+  console.info("Mongodb connection closed");
 }

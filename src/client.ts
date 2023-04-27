@@ -49,4 +49,9 @@ export class MongoClient extends OriginalMongoClient {
     const collection = db.collection(name);
     return new Model(schema, collection);
   }
+
+  close(force?: boolean | undefined): Promise<void> {
+    this.#initedDBPromise = undefined;
+    return super.close(force);
+  }
 }

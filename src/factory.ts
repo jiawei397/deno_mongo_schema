@@ -30,9 +30,11 @@ export class MongoFactory {
     return this.#initPromise;
   }
 
-  static close() {
+  static async close() {
     clearCacheTimeout();
-    return this.#client?.close(true);
+    await this.#client?.close(true);
+    this.#client = undefined;
+    this.#initPromise = undefined;
   }
 
   /**
