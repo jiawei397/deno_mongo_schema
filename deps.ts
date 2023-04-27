@@ -1,6 +1,5 @@
 export {
   type AggregateOptions,
-  // type AggregatePipeline,
   type BulkWriteOptions,
   Collection,
   type CountOptions,
@@ -23,35 +22,6 @@ export {
   type UpdateOptions,
   type WithId,
 } from "npm:mongodb@5.3.0";
-// export { ObjectId } from "npm:bson@5.2.0";
-// export type {
-//   // AggregateOptions,
-//   // AggregatePipeline,
-//   BuildInfo,
-//   ConnectOptions,
-//   // CountOptions,
-//   // CreateIndexOptions,
-//   // DeleteOptions,
-//   // DistinctOptions,
-//   // Document,
-//   // DropIndexOptions,
-//   // Filter,
-//   // FindAndModifyOptions,
-//   // FindOptions,
-//   IndexOptions,
-//   // InsertDocument,
-//   // InsertOptions,
-//   ListDatabaseInfo,
-//   // ObjectId,
-//   // UpdateFilter,
-//   // UpdateOptions,
-// } from "https://deno.land/x/mongo@v0.31.1/mod.ts";
-// export {
-//   MongoDriverError,
-//   MongoError,
-//   MongoServerError,
-// } from "https://deno.land/x/mongo@v0.31.1/src/error.ts";
-// export { parse } from "https://deno.land/x/mongo@v0.31.1/src/utils/uri.ts";
 export {
   bgBlue,
   bgRgb24,
