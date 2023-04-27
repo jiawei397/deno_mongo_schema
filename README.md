@@ -1,19 +1,19 @@
 # deno_mongo_schema
 
-Extend from **[deno_mongo v0.31.1](https://deno.land/x/mongo)**, support Schema
-and extend some API.
+Extend from the Node.js
+**[mongodb client v5.3.0](https://github.com/mongodb/node-mongodb-native)**,
+support Schema and extend some API.
 
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
-[![tag](https://img.shields.io/badge/deno-v1.29.0-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno-v1.32.5-green.svg)](https://github.com/denoland/deno)
 
-> Breaking changes when on v0.9.0, because I want to change the word
-> `SchemaDecorator` to `Schema`, and the word `Schema` changed to `BaseSchema`.
+> Breaking changes on v1.0.0.
 >
-> If you are using the old version, then you can global replace by IDE or run
+> I have to switch client from [deno_mongo](https://deno.land/x/mongo) to
+> Node.js. Because it is officially maintained, it looks more robust.
 >
-> `deno run --allow-read --allow-write --unstable https://deno.land/x/deno_mongo_schema@v0.10.5/build/update.ts`
->
-> once in your project.
+> If it is to be used in production, reconnecting after wire breakage is an
+> important function.
 
 ## hooks
 
@@ -244,5 +244,6 @@ UserSchema.virtual("role", {
 
 - [x] Modify schema as a decorator
 - [x] Unit
-- [ ] Configurable whether to convert _id
+- [x] Configurable whether to convert _id
 - [x] Configurable the createTime and modifyTime
+- [x] Switch the underlying layer to the official Node.js version library
