@@ -1,4 +1,98 @@
-# [](https://github.com/jiawei397/deno_mongo_schema/compare/v0.9.0...v) (2022-03-25)
+# [](https://github.com/jiawei397/deno_mongo_schema/compare/v0.11.1...v) (2023-04-27)
+
+
+### Bug Fixes
+
+* no bson now ([a8ec988](https://github.com/jiawei397/deno_mongo_schema/commit/a8ec98876c04f2af0558d107abbc7315b37c7266))
+
+
+### Features
+
+* **cache:** clear timeout when close ([e1b4fe2](https://github.com/jiawei397/deno_mongo_schema/commit/e1b4fe2593c3e75cdc038631405e9228a5aa3fea))
+* **model:** filter type use any current ([b3a3ffc](https://github.com/jiawei397/deno_mongo_schema/commit/b3a3ffc617081e78e9da9326993a1b71694453bd))
+* update mongodb client to 5.3.0 ([f28a398](https://github.com/jiawei397/deno_mongo_schema/commit/f28a3989f7acb90d02ce9aeb03998dd9074d8797))
+* use npm:mongodb ([454b36f](https://github.com/jiawei397/deno_mongo_schema/commit/454b36f96a7ee752b44927d8e9c2d5070dc7425b))
+
+
+
+## [0.11.1](https://github.com/jiawei397/deno_mongo_schema/compare/v0.11.0...v0.11.1) (2023-03-30)
+
+
+### Features
+
+* **type:** RequiredId not extends BaseSchema ([d52d67d](https://github.com/jiawei397/deno_mongo_schema/commit/d52d67df5ab3ab023c7a41794bb0b30e93f0b8d5))
+
+
+
+# [0.11.0](https://github.com/jiawei397/deno_mongo_schema/compare/v0.10.5...v0.11.0) (2023-03-30)
+
+
+### Features
+
+* **model:** inject indexes ([53b44f7](https://github.com/jiawei397/deno_mongo_schema/commit/53b44f70dc26a5d5b99ea35a1b18fdc09c74cb20))
+* **type:** find only set id and _id be required ([c338aa3](https://github.com/jiawei397/deno_mongo_schema/commit/c338aa3ef021df9907e168f7c402ac42cafd33dd))
+* **types:** add Simplify ([6aa654f](https://github.com/jiawei397/deno_mongo_schema/commit/6aa654ff7ece839adbe18fccc349ec61991a5b2b))
+
+
+
+## [0.10.5](https://github.com/jiawei397/deno_mongo_schema/compare/v0.10.4...v0.10.5) (2022-06-24)
+
+
+
+## [0.10.4](https://github.com/jiawei397/deno_mongo_schema/compare/v0.10.3...v0.10.4) (2022-06-24)
+
+
+### Features
+
+* **reflect:** update reflect ([25fba22](https://github.com/jiawei397/deno_mongo_schema/commit/25fba22249ea2c6a1ae7375318acf4da92d30c8f))
+
+
+
+## [0.10.3](https://github.com/jiawei397/deno_mongo_schema/compare/v0.10.2...v0.10.3) (2022-06-22)
+
+
+### Features
+
+* **model:** find return null instead of undefined ([f020126](https://github.com/jiawei397/deno_mongo_schema/commit/f0201269c80f46f35a4d803ac67d3f5544bd9483))
+
+
+
+## [0.10.2](https://github.com/jiawei397/deno_mongo_schema/compare/v0.10.1...v0.10.2) (2022-06-22)
+
+
+### Features
+
+* **model:** find type required ([c2c570f](https://github.com/jiawei397/deno_mongo_schema/commit/c2c570f243a83b07a1e9e9d6ac31a82822bd0928))
+
+
+
+## [0.10.1](https://github.com/jiawei397/deno_mongo_schema/compare/v0.10.0...v0.10.1) (2022-06-22)
+
+
+
+# [0.10.0](https://github.com/jiawei397/deno_mongo_schema/compare/v0.9.3...v0.10.0) (2022-06-22)
+
+
+### Features
+
+* **model:** only find return id ([625d35a](https://github.com/jiawei397/deno_mongo_schema/commit/625d35abe6290cec2938d77b81fe3e34f070e572))
+
+
+
+## [0.9.3](https://github.com/jiawei397/deno_mongo_schema/compare/v0.9.2...v0.9.3) (2022-05-05)
+
+
+### Bug Fixes
+
+* **index:** support expires alias ([5ed916f](https://github.com/jiawei397/deno_mongo_schema/commit/5ed916f20a16456d0181863e1596128a26fe3822))
+
+
+
+## [0.9.2](https://github.com/jiawei397/deno_mongo_schema/compare/v0.9.1...v0.9.2) (2022-04-25)
+
+
+
+## [0.9.1](https://github.com/jiawei397/deno_mongo_schema/compare/v0.9.0...v0.9.1) (2022-03-25)
 
 
 
