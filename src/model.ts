@@ -569,7 +569,7 @@ export class Model<T extends Document> {
     update: UpdateFilter<T>,
     options?: FindAndUpdateExOptions,
   ) {
-    const filter: WithId<T> = {
+    const filter: any = {
       _id: transToMongoId(id),
     };
     if (options) {
@@ -582,7 +582,7 @@ export class Model<T extends Document> {
     id: string | ObjectId,
     options?: FindExOptions,
   ) {
-    const filter: WithId<T> = {
+    const filter: any = {
       _id: transToMongoId(id),
     };
     return this.findOne(filter, options);
@@ -752,7 +752,7 @@ export class Model<T extends Document> {
   findOneAndDelete = this.deleteOne;
 
   deleteById(id: string | ObjectId) {
-    const filter = {
+    const filter: any = {
       _id: transToMongoId(id),
     };
     return this.deleteOne(filter);
