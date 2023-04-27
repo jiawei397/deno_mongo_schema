@@ -101,9 +101,7 @@ Deno.test({
           "sex": "man", // ex insert key
         },
       };
-      const options = {
-        new: true,
-      };
+
       UserSchema.pre(
         MongoHookMethod.update,
         function (
@@ -133,28 +131,13 @@ Deno.test({
       });
 
       {
-        const res = await userModel.findByIdAndUpdate(id, update, options);
+        const res = await userModel.findByIdAndUpdate(id, update);
         assert(res);
-        assert(!res._id, "res._id is dropped");
-        assert(res.id, "res.id is not null");
-        assertEquals(res.name, update.$set.name);
-        assertEquals(res.age, update.$set.age);
-        assertEquals((res as any).sex, undefined);
         assertEquals(
           (res as any).addr,
           insertedAddr,
           "hook findOneAndUpdate will inster name",
         );
-      }
-
-      {
-        const res = await userModel.findByIdAndUpdate(id, update, {
-          new: true,
-          remainOriginId: true,
-        });
-        assert(res);
-        assert(res._id, "res._id should be remained");
-        assert(res.id, "res.id cannot be null");
       }
     });
 
@@ -238,6 +221,110 @@ Deno.test({
 
       assertEquals(arr.length, 2);
       assertEquals((arr[0] as any).id, id2);
+    });
+
+    await t.step("findByIdAndUpdate", async () => {
+      UserSchema.clearHooks();
+
+      const user = await userModel.findById(id2);
+      const originName = user!.name;
+
+      {
+        const randomName = Math.random().toString();
+        const result = await userModel.findByIdAndUpdate(id2, {
+          name: randomName,
+        });
+        assert(result);
+        assert(!result.id);
+        assert(result._id);
+        assert(result._id instanceof ObjectId);
+        assertEquals(result._id.toString(), id2);
+        assertEquals(result.name, originName, "default not return new value");
+      }
+
+      { // test new
+        const randomName = Math.random().toString();
+        const result = await userModel.findByIdAndUpdate(id2, {
+          name: randomName,
+        }, {
+          new: true,
+        });
+        assert(result);
+        assert(result.id);
+        assert(!result._id);
+        assertEquals(result.name, randomName);
+        assertEquals(result.id, id2);
+      }
+
+      { // test reamainOriginId
+        const randomName = Math.random().toString();
+        const result = await userModel.findByIdAndUpdate(id2, {
+          name: randomName,
+        }, {
+          new: true,
+          remainOriginId: true,
+        });
+        assert(result);
+        assert(result.id);
+        assert(result._id, "res._id should be remained");
+        assertEquals(result.name, randomName);
+        assertEquals(result.id, id2);
+        assert(result._id instanceof ObjectId);
+        assertEquals(result._id.toString(), id2);
+      }
+
+      { // origin data
+        const user = await userModel.findById(id2);
+        assert(user);
+        const update = {
+          $set: {
+            "name": "bb",
+            "age": 222,
+            "sex": "man", // ex insert key
+          },
+        };
+        const res = await userModel.findByIdAndUpdate(id2, update);
+        assert(res);
+        assertEquals(res.name, user.name);
+        assertEquals(res.age, user.age);
+        assertEquals((res as any).sex, undefined);
+      }
+
+      {
+        const update = {
+          $set: {
+            "name": "bb",
+            "age": 222,
+            "sex": "man", // ex insert key
+          },
+        };
+        const res = await userModel.findByIdAndUpdate(id2, update, {
+          new: true,
+        });
+        assert(res);
+        assertEquals(res.name, update.$set.name);
+        assertEquals(res.age, update.$set.age);
+        assertEquals((res as any).sex, undefined, "extra key will be droped");
+      }
+
+      {
+        const update = {
+          "name": "bb",
+          "age": 222,
+          "sex": "man", // ex insert key
+        };
+        const cloned = { ...update };
+        const res = await userModel.findByIdAndUpdate(id2, update, {
+          new: true,
+        });
+        assert(res);
+        assert(!update.name, "update will be changed to $set");
+        assertEquals((update as any).$set.name, cloned.name);
+        assertEquals((update as any).$set.age, cloned.age);
+        assertEquals(res.name, cloned.name);
+        assertEquals(res.age, cloned.age);
+        assertEquals((res as any).sex, undefined, "extra key will be droped");
+      }
     });
 
     await t.step("findByIdAndDelete", async () => {
