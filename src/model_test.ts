@@ -516,7 +516,7 @@ Deno.test({
   name: "Prop",
   sanitizeResources: false, // has TCP connections left open
   sanitizeOps: false,
-  ignore: true,
+  // ignore: true,
   fn: async (t) => {
     await connect();
 
