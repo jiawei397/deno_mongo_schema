@@ -13,7 +13,7 @@ import { Model } from "./model.ts";
 import { getFormattedModelName, SchemaHelper } from "./schema.ts";
 import { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
-import { Cache } from "./utils/cache.ts";
+import { Cache, clearCacheTimeout } from "./utils/cache.ts";
 
 export class MongoFactory {
   static #client: MongoClient | undefined;
@@ -31,6 +31,7 @@ export class MongoFactory {
   }
 
   static close() {
+    clearCacheTimeout();
     return this.#client?.close(true);
   }
 

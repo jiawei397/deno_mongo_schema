@@ -3,6 +3,8 @@ import { Reflect } from "../../deps.ts";
 
 export type GetCacheKey = (...args: any[]) => string;
 
+const cacheTimeoutArr: number[] = [];
+
 /**
  * Cache decorator
  */
@@ -35,9 +37,10 @@ export function Cache(
       const result = originalMethod.apply(this, args);
       cache[key] = result;
       if (timeout >= 0) {
-        setTimeout(() => {
+        const timeid = setTimeout(() => {
           cache[key] = undefined;
         }, timeout);
+        cacheTimeoutArr.push(timeid);
       }
       Promise.resolve(result).catch(() => {
         cache[key] = undefined;
@@ -46,4 +49,9 @@ export function Cache(
     };
     return descriptor;
   };
+}
+
+export function clearCacheTimeout() {
+  cacheTimeoutArr.forEach(clearTimeout);
+  cacheTimeoutArr.length = 0;
 }
