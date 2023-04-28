@@ -349,6 +349,47 @@ Deno.test({
         assertEquals(res.age, cloned.age);
         assertEquals((res as any).sex, undefined, "extra key will be droped");
       });
+
+      await t.step("test $unset 1", async () => {
+        const res = await userModel.findByIdAndUpdate(id2, {
+          $unset: {
+            age: 1,
+          },
+        }, {
+          new: true,
+        });
+        assert(res);
+        assertEquals(res.age, undefined);
+      });
+
+      await t.step("test $unset ''", async () => {
+        const res = await userModel.findByIdAndUpdate(id2, {
+          $unset: {
+            name: "",
+          },
+        }, {
+          new: true,
+        });
+        assert(res);
+        assertEquals(res.name, undefined);
+      });
+
+      await t.step("test $unset true", async () => {
+        await userModel.findByIdAndUpdate(id2, {
+          $set: {
+            name: "random",
+          },
+        });
+        const res = await userModel.findByIdAndUpdate(id2, {
+          $unset: {
+            name: true,
+          },
+        }, {
+          new: true,
+        });
+        assert(res);
+        assertEquals(res.name, undefined);
+      });
     });
 
     await t.step("findOneAndUpdate", async (t) => {
@@ -475,7 +516,11 @@ Deno.test({
           name,
           age: index,
         }));
-        await userModel.insertMany(users);
+        const result = await userModel.insertMany(users);
+        const insertedIds = result.insertedIds;
+        assert(!Array.isArray(insertedIds));
+        assertEquals(result.insertedCount, originCount);
+        assertEquals(Object.values(insertedIds).length, originCount);
       });
 
       await t.step("count", async () => {
