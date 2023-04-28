@@ -1,12 +1,4 @@
-// deno-lint-ignore-file
-import {
-  assert,
-  Collection,
-  Database,
-  Document,
-  OriginalMongoClient,
-  yellow,
-} from "../deps.ts";
+import { assert, Database, OriginalMongoClient, yellow } from "../deps.ts";
 import { SchemaFactory } from "./factory.ts";
 import { Model } from "./model.ts";
 import { getFormattedModelName, SchemaHelper } from "./schema.ts";
@@ -14,22 +6,18 @@ import { getFormattedModelName, SchemaHelper } from "./schema.ts";
 export class MongoClient extends OriginalMongoClient {
   #initedDBPromise?: Promise<Database>;
   // below is my extend functions
-  initDB(uri: string) {
+  initDB(uri: string): Promise<Database> {
     if (!this.#initedDBPromise) {
-      this.#initedDBPromise = this.connect()
-        .then(() => {
-          let db = uri.split("?")[0].split("/").at(-1);
-          console.log("db: " + db);
-          return this.db(db);
-        })
-        .then((database) => {
-          console.info(
-            `connected mongo：${yellow(uri)} `,
-          );
-          return database;
-        });
+      this.#initedDBPromise = this.#initDB(uri);
     }
     return this.#initedDBPromise;
+  }
+
+  async #initDB(uri: string): Promise<Database> {
+    await this.connect();
+    const db = uri.split("?")[0].split("/").at(-1);
+    console.info(`connected mongo：${yellow(uri)} `);
+    return this.db(db);
   }
 
   async getCollection(name: string) {
@@ -41,11 +29,7 @@ export class MongoClient extends OriginalMongoClient {
     return this.getCollectionByDb(db, modelName, schema);
   }
 
-  async getCollectionByDb(
-    db: Database,
-    name: string,
-    schema: SchemaHelper,
-  ) {
+  private getCollectionByDb(db: Database, name: string, schema: SchemaHelper) {
     const collection = db.collection(name);
     return new Model(schema, collection);
   }

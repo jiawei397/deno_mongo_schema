@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-explicit-any
 import {
   assert,
   blue,
@@ -17,7 +16,7 @@ import { Cache, clearCacheTimeout } from "./utils/cache.ts";
 
 export class MongoFactory {
   static #client: MongoClient | undefined;
-  static #initPromise: Promise<any> | undefined;
+  static #initPromise: Promise<unknown> | undefined;
 
   static get client() {
     return this.#client;
@@ -26,7 +25,6 @@ export class MongoFactory {
   static forRoot(url: string) {
     this.#client = new MongoClient(url);
     this.#initPromise = this.#client.initDB(url);
-    // this.#initPromise = this.#client.connect();
     return this.#initPromise;
   }
 
@@ -51,6 +49,7 @@ export class MongoFactory {
   static getModel<T extends Document>(
     name: string,
   ): Promise<Model<T>>;
+  // deno-lint-ignore no-explicit-any
   static getModel(modelNameOrCls: any) {
     let modelName;
     if (typeof modelNameOrCls === "string") {
@@ -98,7 +97,7 @@ export class MongoFactory {
  * Register a model in the service and is used by [oak_nest](https://deno.land/x/oak_nest)
  */
 export function InjectModel(modelNameOrCls: Constructor | string) {
-  return (target: Constructor, _property: any, index: number) => {
+  return (target: Constructor, _property: unknown, index: number) => {
     Reflect.defineMetadata(
       "design:inject" + index,
       () => {
