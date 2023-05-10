@@ -389,6 +389,11 @@ export class Model<T extends Document> {
     if (Array.isArray(filter.$and)) {
       filter.$and.forEach(this.formatBsonId.bind(this));
     }
+    for (const key in filter) {
+      if (filter[key] === undefined) {
+        delete filter[key];
+      }
+    }
   }
 
   private async preHooks(hook: MongoHookMethod, ...args: any[]) {

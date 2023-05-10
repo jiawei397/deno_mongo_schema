@@ -193,6 +193,17 @@ Deno.test({
         assert([id, id2].find((_id) => _id === doc.id));
         assertEquals(doc.inserted, manyInserted);
       });
+
+      // remove undefined properties
+      const filter = {
+        _id: {
+          $in: [id, id2],
+        },
+        name: undefined, // will remove
+      };
+      const res = await userModel.findMany(filter);
+      assertEquals("name" in filter, false);
+      assert(res.length > 0);
     });
 
     await t.step("find remainOriginId", async () => {
