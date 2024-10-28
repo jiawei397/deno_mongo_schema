@@ -1,6 +1,6 @@
 {
   "name": "@jw397/mongo-schema",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "exports": "./mod.ts",
   "compilerOptions": {
     "experimentalDecorators": true,
