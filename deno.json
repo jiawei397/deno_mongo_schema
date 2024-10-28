@@ -1,5 +1,5 @@
 {
-  "name": "@jw397/deno-mongo-schema",
+  "name": "@jw397/mongo-schema",
   "version": "2.0.0",
   "exports": "./mod.ts",
   "compilerOptions": {
