@@ -10,6 +10,7 @@ import type {
   Document,
   DropIndexesOptions,
   Filter,
+  FindCursor,
   FindOptions,
   Flatten,
   IndexDescription,
@@ -56,7 +57,7 @@ export class Model<T extends Document> {
     this.#collection = collection;
   }
 
-  get collection() {
+  get collection(): Collection<T> {
     return this.#collection;
   }
 
@@ -242,7 +243,7 @@ export class Model<T extends Document> {
   find(
     filter: Filter<T> = {},
     options?: FindOptions,
-  ) {
+  ): FindCursor<WithId<T>> {
     return this.#collection.find(filter, options);
   }
 
@@ -259,7 +260,7 @@ export class Model<T extends Document> {
   async findMany(
     filter?: Filter<T>,
     options?: FindExOptions,
-  ) {
+  ): Promise<RequiredId<T>[]> {
     await this.preFind(MongoHookMethod.findMany, filter, options);
     const docs = await this._find(filter, options).toArray();
     await this.afterFind(docs, filter, options);

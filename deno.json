@@ -1,6 +1,6 @@
 {
-  "name": "@jw397/deno_mongo_schema",
-  "version": "1.0.3",
+  "name": "@jw397/deno-mongo-schema",
+  "version": "2.0.0",
   "exports": "./mod.ts",
   "compilerOptions": {
     "experimentalDecorators": true,

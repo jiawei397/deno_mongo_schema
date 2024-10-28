@@ -3,7 +3,7 @@ import { type Document, ObjectId } from "../../deps.ts";
 import type { Target } from "../types.ts";
 const instanceCache = new Map();
 
-export function pick(obj: any, keys: string[]) {
+export function pick(obj: any, keys: string[]): any {
   const result: any = {};
   for (const key of keys) {
     result[key] = obj[key];
@@ -11,20 +11,20 @@ export function pick(obj: any, keys: string[]) {
   return result;
 }
 
-export function createMongoId() {
+export function createMongoId(): ObjectId {
   return new ObjectId();
 }
 
 export function transToMongoId(
   id: string | number | Uint8Array | ObjectId,
-) {
+): ObjectId {
   if (id && id instanceof ObjectId) {
     return id;
   }
   return new ObjectId(id);
 }
 
-export function getInstance(cls: Target) {
+export function getInstance(cls: Target): Target {
   if (instanceCache.has(cls)) {
     return instanceCache.get(cls);
   }
@@ -33,7 +33,7 @@ export function getInstance(cls: Target) {
   return instance;
 }
 
-export function hasAtomicOperators(doc: Document | Document[]) {
+export function hasAtomicOperators(doc: Document | Document[]): boolean {
   if (Array.isArray(doc)) {
     for (const document of doc) {
       if (hasAtomicOperators(document)) {

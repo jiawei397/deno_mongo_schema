@@ -1,4 +1,4 @@
-import { assert, type Database, OriginalMongoClient, yellow } from "../deps.ts";
+import { assert, type Database, type Document, OriginalMongoClient, yellow } from "../deps.ts";
 import { SchemaFactory } from "./factory.ts";
 import { Model } from "./model.ts";
 import { getFormattedModelName, type SchemaHelper } from "./schema.ts";
@@ -20,7 +20,7 @@ export class MongoClient extends OriginalMongoClient {
     return this.db(db);
   }
 
-  async getCollection(name: string) {
+  async getCollection(name: string): Promise<Model<Document>> {
     assert(this.#initedDBPromise);
     const db = await this.#initedDBPromise;
     const schema = SchemaFactory.getSchemaByName(name);

@@ -87,14 +87,15 @@ export class SchemaHelper {
     updatedAt: string;
   };
 
-  pre(method: MongoHookMethod, callback: MongoHookCallback) {
+  pre(method: MongoHookMethod, callback: MongoHookCallback): MongoHookCallback[] {
     return this.hook(this.preHooks, method, callback);
   }
-  post(method: MongoHookMethod, callback: MongoHookCallback) {
+
+  post(method: MongoHookMethod, callback: MongoHookCallback): MongoHookCallback[] {
     return this.hook(this.postHooks, method, callback);
   }
 
-  clearHooks() {
+  clearHooks(): void {
     this.preHooks.clear();
     this.postHooks.clear();
   }
@@ -103,7 +104,7 @@ export class SchemaHelper {
     hooks: Hooks,
     method: MongoHookMethod,
     callback: MongoHookCallback,
-  ) {
+  ): MongoHookCallback[] {
     let arr = hooks.get(method);
     if (!arr) {
       arr = [];
@@ -117,7 +118,7 @@ export class SchemaHelper {
   populate(
     path: string,
     select?: PopulateSelect,
-  ) {
+  ): this {
     const _select = transferPopulateSelect(select);
     if (_select) {
       this.populateMap.set(path, _select);
@@ -125,12 +126,12 @@ export class SchemaHelper {
     return this;
   }
 
-  unpopulate(path: string) {
+  unpopulate(path: string): this {
     this.populateMap.delete(path);
     return this;
   }
 
-  getMeta() {
+  getMeta(): Record<string, any> {
     return getSchemaMetadata(this.Cls);
   }
 
@@ -146,31 +147,31 @@ export class SchemaHelper {
     return this.postHooks.get(method);
   }
 
-  virtual(name: string, options: VirtualTypeOptions) {
+  virtual(name: string, options: VirtualTypeOptions): this {
     this.populateParams.set(name, options);
     return this;
   }
 
-  unVirtual(name: string) {
+  unVirtual(name: string): this {
     this.populateParams.delete(name);
     return this;
   }
 
-  getPopulateMap() {
+  getPopulateMap(): Map<string, RealPopulateSelect> | undefined {
     if (this.populateMap.size === 0) {
       return;
     }
     return this.populateMap;
   }
 
-  getPopulateParams() {
+  getPopulateParams(): Map<string, VirtualTypeOptions> | undefined {
     if (this.populateParams.size === 0) {
       return;
     }
     return this.populateParams;
   }
 
-  getTimestamps() {
+  getTimestamps(): { createdAt: string; updatedAt: string } {
     if (!this.timestamp) {
       const instance = getInstance(this.Cls);
       const createdAt = Reflect.getMetadata(CREATED_AT_KEY, instance) ||
@@ -186,28 +187,31 @@ export class SchemaHelper {
   }
 }
 
-export function Prop(props?: SchemaType) {
+export function Prop(props?: SchemaType): (target: TargetInstance, propertyKey: string) => any {
   return function (target: TargetInstance, propertyKey: string) {
     addSchemaMetadata(target, propertyKey, props);
     return target;
   };
 }
 
-export function SetCreatedAt() {
-  return function (target: TargetInstance, propertyKey: string) {
+export function SetCreatedAt(): (target: TargetInstance, propertyKey: string) => any {
+  return function (target, propertyKey) {
     Reflect.defineMetadata(CREATED_AT_KEY, propertyKey, target);
     return target;
   };
 }
 
-export function SetUpdatedAt() {
-  return function (target: TargetInstance, propertyKey: string) {
+export function SetUpdatedAt(): (
+  target: TargetInstance,
+  propertyKey: string,
+) => any {
+  return function (target, propertyKey) {
     Reflect.defineMetadata(UPDATED_AT_KEY, propertyKey, target);
     return target;
   };
 }
 
-export function getFormattedModelName(name: string) {
+export function getFormattedModelName(name: string): string {
   let modelName = name;
   if (!modelName.endsWith("s")) {
     modelName += "s";
@@ -219,11 +223,11 @@ export function addSchemaMetadata(
   target: TargetInstance,
   propertyKey: string,
   props: any = {},
-) {
+): void {
   Reflect.defineMetadata(PROP_META_KEY, props, target, propertyKey);
 }
 
-export function InjectIndexes(options: IndexDescription[]) {
+export function InjectIndexes(options: IndexDescription[]): (target: Constructor) => Constructor {
   return (target: Constructor) => {
     Reflect.defineMetadata(INDEX_KEY, options, target);
     return target;

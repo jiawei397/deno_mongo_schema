@@ -8,9 +8,9 @@ import {
   yellow,
 } from "../deps.ts";
 import { MongoClient } from "./client.ts";
-import { Model } from "./model.ts";
+import type { Model } from "./model.ts";
 import { getFormattedModelName, SchemaHelper } from "./schema.ts";
-import { Constructor } from "./types.ts";
+import type { Constructor } from "./types.ts";
 import { ErrorCode } from "./error.ts";
 import { Cache, clearCacheTimeout } from "./utils/cache.ts";
 
@@ -18,11 +18,11 @@ export class MongoFactory {
   static #client: MongoClient | undefined;
   static #initPromise: Promise<unknown> | undefined;
 
-  static get client() {
+  static get client(): MongoClient | undefined {
     return this.#client;
   }
 
-  static forRoot(url: string) {
+  static forRoot(url: string): Promise<unknown> {
     this.#client = new MongoClient(url);
     this.#initPromise = this.#client.initDB(url);
     return this.#initPromise;
@@ -96,8 +96,10 @@ export class MongoFactory {
 /**
  * Register a model in the service and is used by [oak_nest](https://deno.land/x/oak_nest)
  */
-export function InjectModel(modelNameOrCls: Constructor | string) {
-  return (target: Constructor, _property: unknown, index: number) => {
+export function InjectModel(
+  modelNameOrCls: Constructor | string,
+): (target: Constructor, property: unknown, index: number) => void {
+  return (target, _property, index) => {
     Reflect.defineMetadata(
       "design:inject" + index,
       () => {
@@ -115,19 +117,19 @@ export function InjectModel(modelNameOrCls: Constructor | string) {
 export class SchemaFactory {
   private static caches = new Map<string, SchemaHelper>();
 
-  static register(name: string, schema: SchemaHelper) {
+  static register(name: string, schema: SchemaHelper): void {
     this.caches.set(getFormattedModelName(name), schema);
   }
 
-  static unregister(name: string) {
+  static unregister(name: string): void {
     this.caches.delete(getFormattedModelName(name));
   }
 
-  static getSchemaByName(name: string) {
+  static getSchemaByName(name: string): SchemaHelper | undefined {
     return this.caches.get(getFormattedModelName(name));
   }
 
-  static createForClass(Cls: Constructor, name = Cls.name) {
+  static createForClass(Cls: Constructor, name = Cls.name): SchemaHelper {
     let schema = this.getSchemaByName(name);
     if (!schema) {
       schema = new SchemaHelper(Cls);
@@ -149,7 +151,7 @@ export class SchemaFactory {
 /**
  * An decorator to create Schema
  */
-export function Schema(name?: string) {
+export function Schema(name?: string): (target: Constructor) => void {
   return (target: Constructor) => {
     SchemaFactory.createForClass(target, name);
   };

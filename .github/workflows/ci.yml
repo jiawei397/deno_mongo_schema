@@ -21,9 +21,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install Deno
-        uses: denolib/setup-deno@master
+        uses: denoland/setup-deno@v2
         with:
-          deno-version: 1.32.x
+          deno-version: 2.x
 
       - name: Log versions
         run: |
@@ -43,3 +43,6 @@ jobs:
         env:
           BASE_URL: mongodb://localhost:27017/test
         run: deno task test
+      
+      - name: Publish package
+        run: deno publish 

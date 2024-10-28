@@ -5,7 +5,7 @@ Extend from the Node.js
 support Schema and extend some API.
 
 [![ci](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml/badge.svg)](https://github.com/jiawei397/deno_mongo_schema/actions/workflows/ci.yml)
-[![tag](https://img.shields.io/badge/deno-v1.32.5-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno-v2.0.2-green.svg)](https://github.com/denoland/deno)
 
 > Breaking changes on v1.0.0.
 >
