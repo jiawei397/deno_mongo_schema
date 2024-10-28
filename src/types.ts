@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-explicit-any ban-types
-import {
+import type {
   Document,
   Filter,
   // FindAndModifyOptions,
@@ -12,7 +12,7 @@ import {
   ObjectId,
   UpdateOptions,
 } from "../deps.ts";
-import { Model } from "./model.ts";
+import type { Model } from "./model.ts";
 
 export type PopulateSelect =
   | string

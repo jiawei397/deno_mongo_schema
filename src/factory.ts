@@ -1,9 +1,9 @@
 import {
   assert,
   blue,
-  Document,
+  type Document,
   green,
-  MongoServerError,
+  type MongoServerError,
   Reflect,
   yellow,
 } from "../deps.ts";

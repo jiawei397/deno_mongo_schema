@@ -6,7 +6,7 @@ import {
   Prop,
   Schema,
   SchemaFactory,
-  UpdateExOptions,
+  type UpdateExOptions,
 } from "../mod.ts";
 import type { Document } from "../mod.ts";
 import { dbUrl } from "../tests/common.ts";

@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
-import { Document, ObjectId } from "../../deps.ts";
-import { Target } from "../types.ts";
+import { type Document, ObjectId } from "../../deps.ts";
+import type { Target } from "../types.ts";
 const instanceCache = new Map();
 
 export function pick(obj: any, keys: string[]) {

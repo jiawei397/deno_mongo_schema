@@ -1,8 +1,7 @@
 // deno-lint-ignore-file no-explicit-any
-import {
+import type {
   AggregateOptions,
-  assert,
-  blue,
+  AggregationCursor,
   BulkWriteOptions,
   Collection,
   CountOptions,
@@ -12,29 +11,37 @@ import {
   DropIndexesOptions,
   Filter,
   FindOptions,
+  Flatten,
   IndexDescription,
+  InferIdType,
+  InsertManyResult,
   InsertOneOptions,
+  ListIndexesCursor,
   ObjectId,
   OptionalUnlessRequiredId,
   UpdateFilter,
-  yellow,
-} from "../deps.ts";
+  UpdateResult,
+  WithId,
+} from "mongodb";
+import { assert, blue, yellow } from "../deps.ts";
 import {
   getFormattedModelName,
   getSchemaInjectedIndexes,
-  RequiredId,
-  SchemaHelper,
+  type RequiredId,
+  type SchemaHelper,
+  type SchemaWithOptionId,
   transferPopulateSelect,
 } from "./schema.ts";
 import {
-  FindAndUpdateExOptions,
-  FindExOptions,
-  InsertExOptions,
+  type FindAndUpdateExOptions,
+  type FindExOptions,
+  type InsertExOptions,
   MongoHookMethod,
-  PopulateSelect,
-  SchemaType,
-  UpdateExOptions,
-  VirtualTypeOptions,
+  type PopulateSelect,
+  type SchemaType,
+  type Simplify,
+  type UpdateExOptions,
+  type VirtualTypeOptions,
 } from "./types.ts";
 import { hasAtomicOperators, transToMongoId } from "./utils/tools.ts";
 
@@ -111,13 +118,13 @@ export class Model<T extends Document> {
     }
   }
 
-  private findWithVirtual(virturalOptions: {
+  private findWithVirtual(virtualOptions: {
     populateMap: Map<string, PopulateSelect>;
     populateParams: Map<string, VirtualTypeOptions>;
     filter?: Document;
     options?: FindExOptions;
   }) {
-    const { populateMap, populateParams, filter, options } = virturalOptions;
+    const { populateMap, populateParams, filter, options } = virtualOptions;
     const paramsArray = [];
     if (filter) {
       paramsArray.push({
@@ -244,7 +251,7 @@ export class Model<T extends Document> {
   async findOne(
     filter?: Filter<T>,
     options?: FindExOptions,
-  ) {
+  ): Promise<RequiredId<T> | null> {
     await this.preFind(MongoHookMethod.findOne, filter, options);
     const doc = await this._find(filter, options).next();
     await this.afterFind(doc, filter, options);
@@ -496,7 +503,7 @@ export class Model<T extends Document> {
   async insertOne(
     doc: OptionalUnlessRequiredId<T>,
     options: InsertOneOptions = {},
-  ) {
+  ): Promise<ObjectId> {
     // const { insertedIds } = await this.insertMany([doc], options);
     // return insertedIds[0];
     const clonedDocs = [{ ...doc }];
@@ -509,7 +516,7 @@ export class Model<T extends Document> {
   async insertMany(
     docs: OptionalUnlessRequiredId<T>[],
     options?: BulkWriteOptions,
-  ) {
+  ): Promise<InsertManyResult<T>> {
     const clonedDocs = docs.map((doc) => ({ ...doc }));
     await this.preInsert(clonedDocs);
     const res = await this.#collection.insertMany(clonedDocs, options!);
@@ -518,7 +525,14 @@ export class Model<T extends Document> {
   }
 
   /** @deprecated please use insertOne instead */
-  async save(doc: OptionalUnlessRequiredId<T>, options?: InsertExOptions) {
+  async save(
+    doc: OptionalUnlessRequiredId<T>,
+    options?: InsertExOptions,
+  ): Promise<
+    OptionalUnlessRequiredId<T> & {
+      _id: InferIdType<T>;
+    }
+  > {
     const id = await this.insertOne(doc, options);
     const res = {
       ...doc,
@@ -567,7 +581,9 @@ export class Model<T extends Document> {
     id: string | ObjectId,
     update: UpdateFilter<T>,
     options?: FindAndUpdateExOptions,
-  ) {
+  ): Promise<
+    Simplify<Required<Pick<T, "_id" | "id">> & Omit<T, "_id" | "id">> | null
+  > {
     const filter: any = {
       _id: transToMongoId(id),
     };
@@ -577,10 +593,10 @@ export class Model<T extends Document> {
     return this.findOneAndUpdate(filter, update);
   }
 
-  findById<T>(
+  findById(
     id: string | ObjectId,
     options?: FindExOptions,
-  ) {
+  ): Promise<RequiredId<T> | null> {
     const filter: any = {
       _id: transToMongoId(id),
     };
@@ -591,7 +607,9 @@ export class Model<T extends Document> {
     filter: Filter<T>,
     update: UpdateFilter<T>,
     options: FindAndUpdateExOptions = {},
-  ) {
+  ): Promise<
+    RequiredId<T> | null
+  > {
     await this.preFindOneAndUpdate(filter, update, options);
     if (options.new) {
       options.returnDocument = "after";
@@ -601,8 +619,8 @@ export class Model<T extends Document> {
       update,
       options,
     );
-    await this.afterFindOneAndUpdate(updatedDoc.value, options);
-    return updatedDoc.value as RequiredId<T> | null;
+    await this.afterFindOneAndUpdate(updatedDoc?.value, options);
+    return updatedDoc?.value as RequiredId<T> | null;
   }
 
   /**
@@ -695,7 +713,7 @@ export class Model<T extends Document> {
     filter: Filter<T>,
     doc: UpdateFilter<T>,
     options: UpdateExOptions = {},
-  ) {
+  ): Promise<UpdateResult<T>> {
     await this.preUpdate(filter, doc, options);
     const res = await this.#collection.updateMany(filter, doc, options);
     await this.afterUpdate(filter, doc, options);
@@ -706,7 +724,7 @@ export class Model<T extends Document> {
     filter: Filter<T>,
     update: UpdateFilter<T>,
     options: UpdateExOptions = {},
-  ) {
+  ): Promise<UpdateResult<T>> {
     await this.preUpdate(filter, update, options);
     const res = await this.#collection.updateOne(filter, update, options);
     await this.afterUpdate(filter, update, options);
@@ -741,7 +759,7 @@ export class Model<T extends Document> {
 
   delete = this.deleteMany;
 
-  async deleteOne(filter: Filter<T>) {
+  async deleteOne(filter: Filter<T>): Promise<number> {
     await this.preDelete(filter, {});
     const res = await this.#collection.deleteOne(filter);
     await this.afterDelete(filter, {}, res.deletedCount);
@@ -750,7 +768,7 @@ export class Model<T extends Document> {
 
   findOneAndDelete = this.deleteOne;
 
-  deleteById(id: string | ObjectId) {
+  deleteById(id: string | ObjectId): Promise<number> {
     const filter: any = {
       _id: transToMongoId(id),
     };
@@ -787,18 +805,22 @@ export class Model<T extends Document> {
   //   return this.#protocol.commandSingle(this.#dbName, {});
   // }
 
-  distinct(key: string, query: Filter<T> = {}, options: DistinctOptions = {}) {
+  distinct(
+    key: string,
+    query: Filter<T> = {},
+    options: DistinctOptions = {},
+  ): Promise<Flatten<WithId<T>[string]>[]> {
     return this.#collection.distinct(key, query, options);
   }
 
   aggregate<U extends Document = T>(
     pipeline: Document[],
     options: AggregateOptions = {},
-  ) {
+  ): AggregationCursor<U> {
     return this.#collection.aggregate<U>(pipeline, options);
   }
 
-  async syncIndexes() {
+  async syncIndexes(): Promise<boolean> {
     if (!this.#schema) {
       return false;
     }
@@ -807,33 +829,36 @@ export class Model<T extends Document> {
     return true;
   }
 
-  dropIndexes(options?: DropIndexesOptions) {
+  dropIndexes(options?: DropIndexesOptions): Promise<Document> {
     if (options) {
       return this.#collection.dropIndexes(options);
     }
     return this.#collection.dropIndexes();
   }
 
-  drop() {
+  drop(): Promise<boolean> {
     return this.#collection.drop();
   }
 
-  listIndexes() {
+  listIndexes(): ListIndexesCursor {
     return this.#collection.listIndexes();
   }
 
   createIndexes(options: {
     indexes: IndexDescription[];
-  }) {
+  }): Promise<string[]> {
     return this.#collection.createIndexes(options.indexes);
   }
 
-  countDocuments(filter: Filter<T> = {}, options: CountOptions = {}) {
+  countDocuments(
+    filter: Filter<T> = {},
+    options: CountOptions = {},
+  ): Promise<number> {
     this.formatBsonId(filter);
     return this.#collection.countDocuments(filter, options);
   }
 
-  async initModel() {
+  async initModel(): Promise<void> {
     assert(this.#schema, "schema is not defined");
     const injectedIndexes = getSchemaInjectedIndexes(this.#schema.Cls);
     const data = this.#schema.getMeta();

@@ -1,6 +1,6 @@
 import { BaseSchema, MongoFactory, Prop, Schema } from "../mod.ts";
 
-await MongoFactory.forRoot("mongodb://192.168.21.176:27018/wiki");
+await MongoFactory.forRoot("mongodb://root:123456@192.168.21.125:27017/wiki?authSource=admin");
 
 @Schema()
 class OneHourOnline extends BaseSchema {

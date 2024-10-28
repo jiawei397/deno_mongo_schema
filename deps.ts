@@ -21,7 +21,7 @@ export {
   type UpdateFilter,
   type UpdateOptions,
   type WithId,
-} from "npm:mongodb@5.3.0";
+} from "mongodb";
 export {
   bgBlue,
   bgRgb24,
@@ -34,10 +34,10 @@ export {
   rgb24,
   rgb8,
   yellow,
-} from "https://deno.land/std@0.184.0/fmt/colors.ts";
+} from "@std/fmt/colors";
 export {
   assert,
   assertEquals,
-} from "https://deno.land/std@0.184.0/testing/asserts.ts";
+} from "@std/assert";
 
-export { Reflect } from "https://deno.land/x/deno_reflect@v0.2.1/mod.ts";
+export { Reflect } from "deno_reflect";

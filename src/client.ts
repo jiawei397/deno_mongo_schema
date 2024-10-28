@@ -1,7 +1,7 @@
-import { assert, Database, OriginalMongoClient, yellow } from "../deps.ts";
+import { assert, type Database, OriginalMongoClient, yellow } from "../deps.ts";
 import { SchemaFactory } from "./factory.ts";
 import { Model } from "./model.ts";
-import { getFormattedModelName, SchemaHelper } from "./schema.ts";
+import { getFormattedModelName, type SchemaHelper } from "./schema.ts";
 
 export class MongoClient extends OriginalMongoClient {
   #initedDBPromise?: Promise<Database>;
@@ -34,7 +34,7 @@ export class MongoClient extends OriginalMongoClient {
     return new Model(schema, collection);
   }
 
-  close(force?: boolean | undefined): Promise<void> {
+  override close(force?: boolean | undefined): Promise<void> {
     this.#initedDBPromise = undefined;
     return super.close(force);
   }

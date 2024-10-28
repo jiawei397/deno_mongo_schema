@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-explicit-any
-import { IndexDescription, ObjectId, Reflect } from "../deps.ts";
-import {
+import { type IndexDescription, type ObjectId, Reflect } from "../deps.ts";
+import type {
   Constructor,
   Hooks,
   MongoHookCallback,
@@ -14,6 +14,7 @@ import {
   VirtualTypeOptions,
 } from "./types.ts";
 import { getInstance } from "./utils/tools.ts";
+
 const PROP_META_KEY = Symbol("design:prop");
 const INDEX_KEY = Symbol("design:index");
 const CREATED_AT_KEY = "createTime";

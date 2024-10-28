@@ -8,8 +8,8 @@ import {
   nanoid,
 } from "../test.deps.ts";
 import { close, connect, User, UserSchema } from "../tests/common.ts";
-import { MongoHookMethod, UpdateExOptions } from "./types.ts";
-import { Document, ObjectId } from "../deps.ts";
+import { MongoHookMethod, type UpdateExOptions } from "./types.ts";
+import { type Document, ObjectId } from "../deps.ts";
 import { MongoFactory, Schema, SchemaFactory } from "./factory.ts";
 
 @Schema()

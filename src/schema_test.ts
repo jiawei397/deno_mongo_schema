@@ -142,7 +142,7 @@ Deno.test({
       const userModel = await MongoFactory.getModel<User>(userSchemaName);
       const userData = {
         group: "base",
-        title: "test",
+        title: "test", 
       };
       const userId = await userModel.insertOne(userData);
       assert(userId instanceof ObjectId, "userId is not ObjectId");
@@ -203,7 +203,7 @@ Deno.test({
         });
         assert(result);
         assertEquals(result.name, "normal");
-        assertEquals(result.userId, userId);
+        assertEquals(result.userId, userId.toString());
         assert(result.user);
         assert(!Array.isArray(result.user));
         assertEquals(result.user.group, userData.group);
