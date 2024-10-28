@@ -13,7 +13,6 @@ import type {
   FindOptions,
   Flatten,
   IndexDescription,
-  InferIdType,
   InsertManyResult,
   InsertOneOptions,
   ListIndexesCursor,
@@ -29,7 +28,6 @@ import {
   getSchemaInjectedIndexes,
   type RequiredId,
   type SchemaHelper,
-  type SchemaWithOptionId,
   transferPopulateSelect,
 } from "./schema.ts";
 import {
@@ -272,7 +270,7 @@ export class Model<T extends Document> {
     if (!doc) {
       return;
     }
-    const { remainOriginId, populates } = options || {};
+    const { remainOriginId, populates, projection } = options || {};
     this.transferId(doc, remainOriginId);
     const params = this.getPopulateParams();
     if (!params) {
@@ -289,6 +287,10 @@ export class Model<T extends Document> {
       if (populates && !populates[key]) {
         delete doc[key];
         continue;
+      }
+      const localField = value.localField;
+      if (value.isTransformLocalFieldToObjectID) { // here doc[localField] is ObjectId, should transform to string
+        doc[localField] = doc[localField].toString();
       }
       const arr = doc[key] as any[];
       const pickMap = map.get(key);
@@ -530,7 +532,7 @@ export class Model<T extends Document> {
     options?: InsertExOptions,
   ): Promise<
     OptionalUnlessRequiredId<T> & {
-      _id: InferIdType<T>;
+      _id: ObjectId;
     }
   > {
     const id = await this.insertOne(doc, options);

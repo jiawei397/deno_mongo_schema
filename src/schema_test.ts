@@ -174,7 +174,7 @@ Deno.test({
         });
         assert(result);
         assertEquals(result.name, "normal");
-        assertEquals(result.userId, userId);
+        assertEquals(result.userId, userId.toString());
         assert(result.user);
         assert(!Array.isArray(result.user));
         assertEquals(result.user.group, userData.group);
