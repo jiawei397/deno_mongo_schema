@@ -271,7 +271,7 @@ export class Model<T extends Document> {
     if (!doc) {
       return;
     }
-    const { remainOriginId, populates, projection } = options || {};
+    const { remainOriginId, populates } = options || {};
     this.transferId(doc, remainOriginId);
     const params = this.getPopulateParams();
     if (!params) {
